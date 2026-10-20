@@ -27,7 +27,7 @@ jobs:
           echo "Target yang akan dibuat: $TARGET_NAME"
 
           mkdir -p $(dirname "$TARGET_NAME")
-          echo "Dibuat secara otomatis via Telegram Bot pada $(date)" > "$TARGET_NAME"
+          echo "Dibuat secara otomatis oleh YORI AUTO CODING pada $(date)" > "$TARGET_NAME"
 
       - name: Commit and Push Changes
         run: |
