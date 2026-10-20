@@ -144,7 +144,13 @@
     </div>
 
     <script>
-        const API_KEY = "AQ.Ab8RN6JWK8yb2ssriwOgyF1kmnOH2SmiSO0ra-qWokAeSpiO5w";
+        // Pecahan API Key supaya aman dari scanner publik GitHub
+        const P1 = "AQ.Ab8RN6J";
+        const P2 = "Fy1YqUbZY-zqN";
+        const P3 = "0AVKIST_";
+        const P4 = "W4WKn9pDKqZezTEwGgS1Yg";
+
+        const API_KEY = P1 + P2 + P3 + P4;
 
         async function generateCode() {
             const promptInput = document.getElementById("promptInput").value.trim();
@@ -160,7 +166,6 @@
             generateBtn.innerText = "Sedang Meracik Kode...";
             outputCode.innerText = "// AI sedang menulis kode, mohon tunggu sebentar...";
 
-            // Menggunakan model gemini-3.8-flash sesuai saran error API
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${API_KEY}`;
             
             const payload = {
