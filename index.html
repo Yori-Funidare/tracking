@@ -160,8 +160,8 @@
             generateBtn.innerText = "Sedang Meracik Kode...";
             outputCode.innerText = "// AI sedang menulis kode, mohon tunggu sebentar...";
 
-            // Menggunakan model terbaru yang aktif
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+            // Menggunakan model gemini-3.8-flash sesuai saran error API
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${API_KEY}`;
             
             const payload = {
                 contents: [{
