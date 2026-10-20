@@ -3,26 +3,46 @@ name: Telegram Bot Uploader
 on:
   repository_dispatch:
     types: [telegram_command]
-  workflow_dispatch:
 
 jobs:
-  run-bot:
+  process-command:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repo Tracking
-        uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Parse Command and Create File/Folder
+        run: |
+          # Ambil teks dari Telegram payload (contoh: "/createfolder test.txt")
+          FULL_TEXT="${{ github.event.client_payload.text }}"
+          
+          # Hilangkan kata perintah depannya, ambil argumen setelah spasi (misal: "test.txt")
+          TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
+          
+          if [ -z "$TARGET_NAME" ]; then
+            TARGET_NAME="default_file.txt"
+          fi
 
-      - name: Install Dependencies
-        run: npm install axios telegraf
+          echo "Perintah dari Telegram: $FULL_TEXT"
+          echo "Target yang akan dibuat: $TARGET_NAME"
 
-      - name: Run Bot Script
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          GH_PAT: ${{ secrets.GH_PAT }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
-        run: node bot.js
+          # Cek apakah perintahnya mengandung slash "/" di depannya atau buat file teks
+          # Jika argumen mengandung garis miring atau titik, kita buat sebagai file/folder
+          mkdir -p $(dirname "$TARGET_NAME")
+          echo "Dibuat secara otomatis via Telegram Bot pada $(date)" > "$TARGET_NAME"
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "Telegram Bot Action"
+          git config --global user.email "bot@users.noreply.github.com"
+          
+          git add .
+          git status
+          
+          # Cek apakah ada perubahan file yang perlu di-commit
+          if git diff --staged --quiet; then
+            echo "Tidak ada perubahan file."
+          else
+            git commit -m "Auto: Create file from Telegram command [skip ci]"
+            git push
+          > fi
