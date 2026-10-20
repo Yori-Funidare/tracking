@@ -6,7 +6,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 const GH_PAT = process.env.GH_PAT;
 // Ganti dengan repo web utama kamu (tempat website github.io kamu berada)
-const TARGET_REPO = 'yori-funidare/tracking'; 
+const TARGET_REPO = 'Yori-Funidare/tracking'; 
 const BRANCH = 'main';
 
 // 1. Command /createfolder namafolder
