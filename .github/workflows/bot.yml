@@ -45,4 +45,4 @@ jobs:
           else
             git commit -m "Auto: Create file from Telegram command [skip ci]"
             git push
-          > fi
+           fi
