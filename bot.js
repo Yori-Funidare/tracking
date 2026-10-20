@@ -6,7 +6,7 @@ const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 
 const GH_PAT = process.env.GH_PAT;
 // Ganti dengan repo web utama kamu (tempat website github.io kamu berada)
-const TARGET_REPO = 'yori-funidare/minigames'; 
+const TARGET_REPO = 'yori-funidare/tracking'; 
 const BRANCH = 'main';
 
 // 1. Command /createfolder namafolder
@@ -20,7 +20,7 @@ bot.command('createfolder', async (ctx) => {
 
     try {
         // GitHub membuat folder otomatis jika kita upload file placeholder di dalamnya
-        const path = `web/${folderName}/placeholder.txt`;
+        const path = `tracking/${folderName}/placeholder.txt`;
         const content = Buffer.from('Folder created via Telegram Bot').toString('base64');
 
         await axios.put(`https://api.github.com/repos/${TARGET_REPO}/contents/${path}`, {
