@@ -3,6 +3,11 @@ name: YORI AUTO CODING
 on:
   repository_dispatch:
     types: [telegram_command]
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/bot.yml'
 
 permissions:
   contents: write
@@ -17,21 +22,20 @@ jobs:
       - name: Handle Telegram Command
         run: |
           FULL_TEXT="${{ github.event.client_payload.text }}"
-          echo "Perintah masuk: $FULL_TEXT"
+          
+          if [ -z "$FULL_TEXT" ]; then
+            exit 0
+          fi
 
-          # Cek jenis perintah (apakah /autocode atau /createfolder)
           if [[ "$FULL_TEXT" == /autocode* ]]; then
-            # Format: /autocode <nama_file> <instruksi>
             TARGET_FILE=$(echo "$FULL_TEXT" | awk '{print $2}')
             
             if [ -z "$TARGET_FILE" ]; then
               TARGET_FILE="index.html"
             fi
 
-            echo "Membuat kerangka otomatis untuk: $TARGET_FILE"
             mkdir -p $(dirname "$TARGET_FILE")
 
-            # Jika file adalah html, berikan kerangka dasar website otomatis
             if [[ "$TARGET_FILE" == *.html ]]; then
               cat << 'EOF' > "$TARGET_FILE"
 <!DOCTYPE html>
@@ -55,7 +59,6 @@ EOF
             fi
 
           else
-            # Default handler untuk /createfolder atau perintah lainnya
             TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
             if [ -z "$TARGET_NAME" ]; then
               TARGET_NAME="default_file.txt"
