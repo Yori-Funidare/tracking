@@ -1,8 +1,11 @@
-name: Telegram Bot Uploader
+name: YORI AUTO CODING
 
 on:
   repository_dispatch:
     types: [telegram_command]
+
+permissions:
+  contents: write
 
 jobs:
   process-command:
@@ -13,10 +16,7 @@ jobs:
 
       - name: Parse Command and Create File/Folder
         run: |
-          # Ambil teks dari Telegram payload (contoh: "/createfolder test.txt")
           FULL_TEXT="${{ github.event.client_payload.text }}"
-          
-          # Hilangkan kata perintah depannya, ambil argumen setelah spasi (misal: "test.txt")
           TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
           
           if [ -z "$TARGET_NAME" ]; then
@@ -26,8 +26,6 @@ jobs:
           echo "Perintah dari Telegram: $FULL_TEXT"
           echo "Target yang akan dibuat: $TARGET_NAME"
 
-          # Cek apakah perintahnya mengandung slash "/" di depannya atau buat file teks
-          # Jika argumen mengandung garis miring atau titik, kita buat sebagai file/folder
           mkdir -p $(dirname "$TARGET_NAME")
           echo "Dibuat secara otomatis via Telegram Bot pada $(date)" > "$TARGET_NAME"
 
@@ -39,10 +37,9 @@ jobs:
           git add .
           git status
           
-          # Cek apakah ada perubahan file yang perlu di-commit
           if git diff --staged --quiet; then
             echo "Tidak ada perubahan file."
           else
             git commit -m "Auto: Create file from Telegram command [skip ci]"
             git push
-           fi
+          fi
