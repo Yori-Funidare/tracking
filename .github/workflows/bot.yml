@@ -14,24 +14,59 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Parse Command and Create File/Folder
+      - name: Handle Telegram Command
         run: |
           FULL_TEXT="${{ github.event.client_payload.text }}"
-          TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
-          
-          if [ -z "$TARGET_NAME" ]; then
-            TARGET_NAME="Yori-Funidare.txt"
+          echo "Perintah masuk: $FULL_TEXT"
+
+          # Cek jenis perintah (apakah /autocode atau /createfolder)
+          if [[ "$FULL_TEXT" == /autocode* ]]; then
+            # Format: /autocode <nama_file> <instruksi>
+            TARGET_FILE=$(echo "$FULL_TEXT" | awk '{print $2}')
+            
+            if [ -z "$TARGET_FILE" ]; then
+              TARGET_FILE="index.html"
+            fi
+
+            echo "Membuat kerangka otomatis untuk: $TARGET_FILE"
+            mkdir -p $(dirname "$TARGET_FILE")
+
+            # Jika file adalah html, berikan kerangka dasar website otomatis
+            if [[ "$TARGET_FILE" == *.html ]]; then
+              cat << 'EOF' > "$TARGET_FILE"
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto Website</title>
+    <style>
+        body { font-family: sans-serif; background: #121212; color: #fff; text-align: center; padding-top: 50px; }
+    </style>
+</head>
+<body>
+    <h1>Dibuat Otomatis via Yori Auto Coding</h1>
+    <p>Pipeline Telegram & GitHub Actions sukses berjalan!</p>
+</body>
+</html>
+EOF
+            else
+              echo "// Dibuat otomatis via Autocode pada $(date)" > "$TARGET_FILE"
+            fi
+
+          else
+            # Default handler untuk /createfolder atau perintah lainnya
+            TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
+            if [ -z "$TARGET_NAME" ]; then
+              TARGET_NAME="default_file.txt"
+            fi
+            mkdir -p $(dirname "$TARGET_NAME")
+            echo "Dibuat secara otomatis oleh Yori Bot pada $(date)" > "$TARGET_NAME"
           fi
-
-          echo "Perintah dari Telegram: $FULL_TEXT"
-          echo "Target yang akan dibuat: $TARGET_NAME"
-
-          mkdir -p $(dirname "$TARGET_NAME")
-          echo "Dibuat secara otomatis oleh YORI AUTO CODING pada $(date)" > "$TARGET_NAME"
 
       - name: Commit and Push Changes
         run: |
-          git config --global user.name "Telegram Bot Action"
+          git config --global user.name "Yori Auto Coding Bot"
           git config --global user.email "bot@users.noreply.github.com"
           
           git add .
@@ -40,6 +75,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "Tidak ada perubahan file."
           else
-            git commit -m "Auto: Create file from Telegram command [skip ci]"
+            git commit -m "Auto: Process command from Telegram [skip ci]"
             git push
           fi
