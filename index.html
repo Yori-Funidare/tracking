@@ -1,1 +1,218 @@
-p
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yori AI Coder</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        header h1 {
+            font-size: 1.5rem;
+            color: #58a6ff;
+            margin-bottom: 4px;
+        }
+        header p {
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            padding: 12px;
+            background-color: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: #c9d1d9;
+            font-size: 0.95rem;
+            resize: vertical;
+            outline: none;
+        }
+        textarea:focus {
+            border-color: #58a6ff;
+        }
+        button {
+            background-color: #238636;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background-color: #2ea043;
+        }
+        button:disabled {
+            background-color: #21262d;
+            color: #484f58;
+            cursor: not-allowed;
+        }
+        .output-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #161b22;
+            padding: 8px 12px;
+            border: 1px solid #30363d;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            font-size: 0.85rem;
+            color: #8b949e;
+        }
+        .copy-btn {
+            background: #30363d;
+            color: #c9d1d9;
+            border: none;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            background: #484f58;
+        }
+        pre {
+            background-color: #010409;
+            border: 1px solid #30363d;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
+            padding: 12px;
+            overflow-x: auto;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.85rem;
+            color: #7ee787;
+            flex: 1;
+            min-height: 250px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Yori AI Coder</h1>
+        <p>Asisten Pembuat Kode Pribadi</p>
+    </header>
+
+    <div class="container">
+        <textarea id="promptInput" placeholder="Tulis instruksi di sini... (Contoh: Buatkan kalkulator sederhana dengan HTML dan CSS)"></textarea>
+        <button id="generateBtn" onclick="generateCode()">Generate Kode</button>
+
+        <div class="output-container">
+            <div class="output-header">
+                <span>Hasil Kode</span>
+                <button class="copy-btn" onclick="copyCode()">Salin Kode</button>
+            </div>
+            <pre id="outputCode">// Kode yang digenerate oleh AI akan muncul di sini...</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AQ.Ab8RN6JWK8yb2ssriwOgyF1kmnOH2SmiSO0ra-qWokAeSpiO5w";
+
+        async function generateCode() {
+            const promptInput = document.getElementById("promptInput").value.trim();
+            const outputCode = document.getElementById("outputCode");
+            const generateBtn = document.getElementById("generateBtn");
+
+            if (!promptInput) {
+                alert("Tulis instruksinya dulu, Bro!");
+                return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerText = "Sedang Meracik Kode...";
+            outputCode.innerText = "// AI sedang menulis kode, mohon tunggu sebentar...";
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+            
+            const payload = {
+                contents: [{
+                    parts: [{
+                        text: `Tuliskan HANYA kode murni (clean code) berdasarkan instruksi berikut: '${promptInput}'. Jangan berikan teks basa-basi atau penjelasan di luar kode. Berikan kodenya secara lengkap.`
+                    }]
+                }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                console.log("Respons dari API:", data);
+                
+                if (data.candidates && data.candidates[0].content) {
+                    let text = data.candidates[0].content.parts[0].text;
+                    
+                    if (text.startsWith("```")) {
+                        const lines = text.split("\n");
+                        lines.shift();
+                        if (lines[lines.length - 1].trim() === "```") {
+                            lines.pop();
+                        }
+                        text = lines.join("\n");
+                    }
+
+                    outputCode.innerText = text.trim();
+                } else {
+                    outputCode.innerText = "// Gagal dari API:\n" + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                console.error(error);
+                outputCode.innerText = "// Error Koneksi: " + error.message;
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerText = "Generate Kode";
+            }
+        }
+
+        function copyCode() {
+            const codeText = document.getElementById("outputCode").innerText;
+            navigator.clipboard.writeText(codeText).then(() => {
+                alert("Kode berhasil disalin ke clipboard!");
+            }).catch(err => {
+                console.error("Gagal menyalin: ", err);
+            });
+        }
+    </script>
+</body>
+</html>
