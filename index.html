@@ -42,6 +42,7 @@
             flex-direction: column;
             gap: 16px;
             scroll-behavior: smooth;
+            padding-bottom: 20px;
         }
         .message {
             max-width: 85%;
@@ -99,14 +100,16 @@
         .copy-btn:hover {
             background: #484f58;
         }
-        /* Input Area bawah */
+        /* Input Area bawah yang diperjelas */
         .input-area {
             background-color: #161b22;
             padding: 12px 16px;
             border-top: 1px solid #30363d;
             display: flex;
             gap: 8px;
-            align-items: flex-end;
+            align-items: center;
+            position: relative;
+            z-index: 10;
         }
         textarea {
             flex: 1;
@@ -114,11 +117,10 @@
             border: 1px solid #30363d;
             border-radius: 8px;
             color: #c9d1d9;
-            padding: 10px;
-            font-size: 0.9rem;
+            padding: 10px 12px;
+            font-size: 0.95rem;
             resize: none;
-            height: 45px;
-            max-height: 120px;
+            height: 48px;
             outline: none;
         }
         textarea:focus {
@@ -128,13 +130,14 @@
             background-color: #238636;
             color: white;
             border: none;
-            padding: 10px 16px;
+            padding: 0 16px;
             border-radius: 8px;
             font-weight: bold;
             font-size: 0.9rem;
             cursor: pointer;
-            height: 45px;
+            height: 48px;
             transition: background 0.2s;
+            flex-shrink: 0;
         }
         button#sendBtn:hover {
             background-color: #2ea043;
@@ -160,9 +163,9 @@
         </div>
     </div>
 
-    <!-- Kotak Input Pesan -->
+    <!-- Kotak Input Pesan di Bawah -->
     <div class="input-area">
-        <textarea id="promptInput" placeholder="Ketik instruksi koding di sini..." rows="1" onkeydown="handleKeyDown(event)"></textarea>
+        <textarea id="promptInput" placeholder="Ketik instruksi koding di sini..." onkeydown="handleKeyDown(event)"></textarea>
         <button id="sendBtn" onclick="sendMessage()">Kirim</button>
     </div>
 
@@ -185,7 +188,6 @@
             // 1. Tampilkan pesan user ke chat
             appendMessage(text, 'user-message');
             promptInput.value = "";
-            promptInput.style.height = "45px"; // Reset tinggi textarea
 
             // 2. Buat gelembung loading untuk AI
             const loadingId = "loading_" + Date.now();
