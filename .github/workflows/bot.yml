@@ -2,7 +2,7 @@ name: YORI AUTO CODING
 
 on:
   repository_dispatch:
-    types: [telegram_command]
+    types: [YORI COMMAND]
 
 permissions:
   contents: write
