@@ -20,7 +20,7 @@ jobs:
           TARGET_NAME=$(echo "$FULL_TEXT" | awk '{print $2}')
           
           if [ -z "$TARGET_NAME" ]; then
-            TARGET_NAME="default_file.txt"
+            TARGET_NAME="Yori-Funidare.txt"
           fi
 
           echo "Perintah dari Telegram: $FULL_TEXT"
